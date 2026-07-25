@@ -46,10 +46,10 @@ export function SettingsPage() {
     <div className="max-w-2xl space-y-6">
       <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
 
-      <div className="flex gap-2 pb-2 border-b border-slate-100">
+      <div className="flex gap-2 pb-2 border-b border-slate-100 overflow-x-auto">
         {tabs.map((t) => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-colors ${tab === t.key ? 'bg-brand-50 text-brand-600' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-colors whitespace-nowrap ${tab === t.key ? 'bg-brand-50 text-brand-600' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
           ><t.icon className="w-4 h-4" />{t.label}</button>
         ))}
       </div>

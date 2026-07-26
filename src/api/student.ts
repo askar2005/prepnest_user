@@ -80,15 +80,22 @@ export async function fetchUserProgress() {
   return data;
 }
 
-export async function fetchDailyChallenges() {
-  const { data } = await apiClient.get('/daily-challenges');
-  return data as { items: any[] };
+export async function getTodayChallenge() {
+  const { data } = await apiClient.get('/daily-challenge/today');
+  return data as { challenge: any; attempt: any } | null;
 }
 
-export async function submitDailyChallenge(id: string, score: number) {
-  const { data } = await apiClient.post(`/student/daily-challenges/${id}/submit`, { score });
-  return data;
+export async function submitDailyChallengeAttempt(challengeId: string, selectedAnswer: string) {
+  const { data } = await apiClient.post(`/daily-challenge/${challengeId}/submit`, { selectedAnswer });
+  return data as { attempt: any; correctAnswer: string; explanation: string };
 }
+
+export async function getDailyChallengeStreak() {
+  const { data } = await apiClient.get('/daily-challenge/streak');
+  return data as { currentStreak: number; longestStreak: number; lastCompletedDate: string | null };
+}
+
+
 
 // Topic-scoped endpoints
 export async function fetchTopicDetail(categorySlug: string, topicId: string) {

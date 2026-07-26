@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchPreparationCategories, fetchUserProgress, fetchDailyChallenges, fetchRecentNotifications } from '../../api/student';
+import { fetchPreparationCategories, fetchUserProgress, getTodayChallenge, getDailyChallengeStreak, fetchRecentNotifications } from '../../api/student';
 import { useAuth } from '../../context/AuthContext';
 import { CategoryCard } from '../../components/student/CategoryCard';
 import { FilterChips } from '../../components/student/FilterChip';
@@ -11,7 +11,6 @@ import { Zap, TrendingUp, Bell, ChevronRight, Megaphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-const CATEGORY_SLUGS = ['gate', 'aptitude', 'interview', 'technical'];
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const itemAnim = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
@@ -31,9 +30,15 @@ export function DashboardPage() {
     staleTime: 30000,
   });
 
-  const { data: challenges } = useQuery({
-    queryKey: ['daily-challenges'],
-    queryFn: () => fetchDailyChallenges(),
+  const { data: todayChallenge } = useQuery({
+    queryKey: ['daily-challenge-today'],
+    queryFn: () => getTodayChallenge(),
+    staleTime: 30000,
+  });
+
+  const { data: streakData } = useQuery({
+    queryKey: ['daily-challenge-streak'],
+    queryFn: () => getDailyChallengeStreak(),
     staleTime: 30000,
   });
 
@@ -45,8 +50,7 @@ export function DashboardPage() {
 
   const allItems = categoriesData?.items || [];
   const filteredItems = filter === 'all' ? allItems : allItems.filter((c: any) => c.slug === filter || filter === 'recent' || filter === 'popular');
-  const displayItems = filteredItems.length > 0 ? filteredItems : allItems;
-  const categories = displayItems.filter((c: any) => CATEGORY_SLUGS.includes(c.slug));
+  const categories = filteredItems.length > 0 ? filteredItems : allItems;
 
   return (
     <div className="space-y-8">
@@ -65,13 +69,13 @@ export function DashboardPage() {
           </HeroBanner>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <StreakCard streak={progress?.streak || 0} />
+          <StreakCard streak={streakData?.currentStreak || 0} />
           <WeeklyGoalCard progress={progress?.weeklyProgress || 0} target={10} />
         </div>
       </div>
 
       {/* Daily Challenge Snippet */}
-      {challenges && challenges.items && challenges.items.length > 0 && (
+      {todayChallenge?.challenge && !todayChallenge?.attempt && (
         <Link to="/daily-challenge" className="group block rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 p-5 hover:shadow-md transition-all">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -150,11 +154,7 @@ export function DashboardPage() {
               <CategoryCard
                 slug={cat.slug}
                 name={cat.name || CATEGORY_LABELS[cat.slug] || cat.slug}
-                description={cat.description || `Master ${cat.name} Preparation with Notes, MCQs, Videos, PYQs and Mock Tests.`}
                 coverImage={cat.coverImage}
-                gradientColor={cat.gradientColor}
-                icon={cat.icon}
-                difficulty={DIFFICULTY_MAP[cat.slug] || 'All Levels'}
                 stats={{ notes: cat._count?.studyMaterials || 0, mcqs: cat._count?.mcqQuestions || 0, videos: cat._count?.videos || 0, mockTests: cat._count?.mockTests || 0 }}
                 progress={Math.min(100, Math.round(((cat._count?.studyMaterials || 0) / 50) * 100))}
               />
@@ -170,6 +170,4 @@ const CATEGORY_LABELS: Record<string, string> = {
   gate: 'GATE Preparation', aptitude: 'Aptitude Preparation', interview: 'Interview Preparation', technical: 'Technical Preparation',
 };
 
-const DIFFICULTY_MAP: Record<string, string> = {
-  gate: 'Advanced', aptitude: 'Beginner', interview: 'Intermediate', technical: 'Advanced',
-};
+

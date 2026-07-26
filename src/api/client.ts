@@ -30,21 +30,40 @@ export function resolveImageUrl(url: string | null | undefined): string | null {
 }
 
 apiClient.interceptors.request.use((config) => {
-  console.log(`[API Request] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
   const token = window.localStorage.getItem('prepnest_token');
+  console.log(`[API-REQ] ${config.method?.toUpperCase()} ${config.url} ${token ? '🔑 with token' : '🔓 no token'}`);
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`[API-RES] ${response.status} ${response.config?.method?.toUpperCase()} ${response.config?.url}`);
+    return response;
+  },
   (error) => {
-    if (error.response?.status === 401) {
-      const wasAuth = error.config?.url?.includes('/auth/');
+    const status = error.response?.status;
+    const url = error.config?.url || '';
+    const method = error.config?.method?.toUpperCase();
+    const data = error.response?.data;
+    console.log(`[API-ERR] ${status} ${method} ${url}`, data ? JSON.stringify(data) : 'network error');
+    if (error.code === 'ERR_CANCELED') {
+      console.log('[API-ERR] Request was canceled (ERR_CANCELED)');
+      return Promise.reject(error);
+    }
+    if (status === 429) {
+      console.log('[API-ERR] === RATE LIMITED (429) === url:', url);
+    }
+    if (status === 401) {
+      const wasAuth = url.includes('/auth/');
+      console.log('[API-ERR] === 401 UNAUTHORIZED === wasAuth:', wasAuth, 'url:', url);
       if (!wasAuth) {
+        console.log('[API-ERR] Clearing token and redirecting to /login');
         window.localStorage.removeItem('prepnest_token');
         window.localStorage.removeItem('prepnest_user');
         window.location.href = '/login';
+      } else {
+        console.log('[API-ERR] Auth request returned 401 — not redirecting');
       }
     }
     return Promise.reject(error);

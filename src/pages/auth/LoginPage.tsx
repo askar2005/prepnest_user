@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
@@ -12,21 +12,38 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
+  const submittingRef = useRef(false);
   const expired = window.sessionStorage.getItem('prepnest_session_expired');
 
   if (user) return <Navigate to="/" replace />;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[STUDENT-LOGIN] submit called');
+    if (submittingRef.current) {
+      console.log('[STUDENT-LOGIN] DUPLICATE SUBMIT BLOCKED');
+      return;
+    }
     setBusy(true);
+    submittingRef.current = true;
     try {
+      console.log('[STUDENT-LOGIN] calling AuthContext.login — email:', email);
       await login(email, password);
+      console.log('[STUDENT-LOGIN] === LOGIN SUCCESS === redirecting');
       window.sessionStorage.removeItem('prepnest_session_expired');
       pushToast('Welcome back!', 'success');
       navigate('/');
     } catch (err: any) {
-      pushToast(err?.response?.data?.message || 'Login failed', 'error');
-    } finally { setBusy(false); }
+      const status = err?.response?.status;
+      const serverMsg = err?.response?.data?.message;
+      const detailErr = err?.response?.data?.details;
+      console.log('[STUDENT-LOGIN] === LOGIN FAILED === status:', status, 'message:', serverMsg, 'details:', detailErr);
+      console.log('[STUDENT-LOGIN] error object:', err);
+      pushToast(serverMsg || 'Login failed', 'error');
+    } finally {
+      setBusy(false);
+      submittingRef.current = false;
+    }
   };
 
   return (

@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { apiClient, resolveImageUrl } from './client';
 
 export async function fetchStudentProfile() {
   const { data } = await apiClient.get('/auth/me');
@@ -139,15 +139,17 @@ export async function fetchTopicMockTests(categorySlug: string, topicId: string)
 }
 
 export async function fetchNoteDetail(noteId: string) {
-  const { data } = await apiClient.get(`/api/notes/${noteId}`);
+  const { data } = await apiClient.get(`/notes/${noteId}`);
   return data;
 }
 
 export async function fetchAndOpenFile(fileUrl: string): Promise<void> {
+  const resolvedUrl = resolveImageUrl(fileUrl);
+  if (!resolvedUrl) throw new Error('Invalid file URL');
   const token = window.localStorage.getItem('prepnest_token');
   const headers: Record<string, string> = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  const response = await fetch(fileUrl, { headers });
+  const response = await fetch(resolvedUrl, { headers });
   if (!response.ok) throw new Error('Unable to load file');
   const blob = await response.blob();
   const blobUrl = URL.createObjectURL(blob);
@@ -176,10 +178,12 @@ export async function fetchUnreadNotificationCount() {
 }
 
 export async function fetchAndDownloadFile(fileUrl: string, fileName: string): Promise<void> {
+  const resolvedUrl = resolveImageUrl(fileUrl);
+  if (!resolvedUrl) throw new Error('Invalid file URL');
   const token = window.localStorage.getItem('prepnest_token');
   const headers: Record<string, string> = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  const response = await fetch(fileUrl, { headers });
+  const response = await fetch(resolvedUrl, { headers });
   if (!response.ok) throw new Error('Unable to download file');
   const blob = await response.blob();
   const blobUrl = URL.createObjectURL(blob);

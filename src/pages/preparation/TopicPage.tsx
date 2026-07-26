@@ -253,9 +253,11 @@ function NotesTab({ category, topicId }: { category: string; topicId: string }) 
 
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {data.map((n: any) => (
-        <NoteCard key={n.id} title={n.title} description={n.description} fileUrl={n.externalUrl || n.fileUrl} fileSize={n.fileSize} tags={n.tags || n.tagsString} />
-      ))}
+      {data.map((n: any) => {
+        // Support both new Note model (pdfUrl) and old StudyMaterial model (externalUrl/fileUrl)
+        const fileUrl = n.pdfUrl || n.externalUrl || n.fileUrl || null;
+        return <NoteCard key={n.id} title={n.title} description={n.description} fileUrl={fileUrl} fileSize={n.fileSize} tags={n.tags || n.tagsString} />;
+      })}
     </div>
   );
 }

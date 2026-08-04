@@ -1,4 +1,4 @@
-import { apiClient, resolveImageUrl } from './client';
+import { apiClient } from './client';
 
 export async function fetchStudentProfile() {
   const { data } = await apiClient.get('/auth/me');
@@ -144,17 +144,8 @@ export async function fetchNoteDetail(noteId: string) {
 }
 
 export async function fetchAndOpenFile(fileUrl: string): Promise<void> {
-  const resolvedUrl = resolveImageUrl(fileUrl);
-  if (!resolvedUrl) throw new Error('Invalid file URL');
-  const token = window.localStorage.getItem('prepnest_token');
-  const headers: Record<string, string> = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const response = await fetch(resolvedUrl, { headers });
-  if (!response.ok) throw new Error('Unable to load file');
-  const blob = await response.blob();
-  const blobUrl = URL.createObjectURL(blob);
-  window.open(blobUrl, '_blank', 'noopener,noreferrer');
-  setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+  if (!fileUrl) throw new Error('Invalid file URL');
+  window.open(fileUrl, '_blank', 'noopener,noreferrer');
 }
 
 export async function fetchNotifications(params?: Record<string, any>) {
@@ -177,21 +168,7 @@ export async function fetchUnreadNotificationCount() {
   return data as { count: number };
 }
 
-export async function fetchAndDownloadFile(fileUrl: string, fileName: string): Promise<void> {
-  const resolvedUrl = resolveImageUrl(fileUrl);
-  if (!resolvedUrl) throw new Error('Invalid file URL');
-  const token = window.localStorage.getItem('prepnest_token');
-  const headers: Record<string, string> = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const response = await fetch(resolvedUrl, { headers });
-  if (!response.ok) throw new Error('Unable to download file');
-  const blob = await response.blob();
-  const blobUrl = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = blobUrl;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(blobUrl);
+export async function fetchAndDownloadFile(fileUrl: string, _fileName: string): Promise<void> {
+  if (!fileUrl) throw new Error('Invalid file URL');
+  window.open(fileUrl, '_blank', 'noopener,noreferrer');
 }

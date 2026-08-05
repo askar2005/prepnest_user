@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchPreparationCategories, fetchUserProgress, getTodayChallenge, getDailyChallengeStreak, fetchRecentNotifications } from '../../api/student';
+import { filterVisiblePreparationCategories } from '../../lib/preparationCategories';
 import { useAuth } from '../../context/AuthContext';
 import { CategoryCard } from '../../components/student/CategoryCard';
 import { FilterChips } from '../../components/student/FilterChip';
@@ -48,7 +49,7 @@ export function DashboardPage() {
     staleTime: 30000,
   });
 
-  const allItems = categoriesData?.items || [];
+  const allItems = filterVisiblePreparationCategories(categoriesData?.items || []);
   const filteredItems = filter === 'all' ? allItems : allItems.filter((c: any) => c.slug === filter || filter === 'recent' || filter === 'popular');
   const categories = filteredItems.length > 0 ? filteredItems : allItems;
 

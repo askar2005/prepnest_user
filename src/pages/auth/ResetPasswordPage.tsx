@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { apiClient } from '../../api/client';
 import { Button } from '../../components/ui/Button';
@@ -18,11 +18,25 @@ export function ResetPasswordPage() {
 
   if (user) return <Navigate to="/" replace />;
 
+  if (!email || !otp) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+        <div className="w-full max-w-sm rounded-[16px] border border-slate-200 bg-white p-6 text-center shadow-soft">
+          <h1 className="text-xl font-semibold text-slate-900">Reset link expired</h1>
+          <p className="mt-2 text-sm text-slate-500">Please request a new OTP to reset your password.</p>
+          <Link to="/forgot-password" className="mt-6 inline-block text-sm font-medium text-brand-600 hover:text-brand-700">
+            Request a new OTP
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
-      await apiClient.post('/auth/reset-password', { email, otp, newPassword: password });
+      await apiClient.post('/auth/reset-password', { email, otp, password });
       pushToast('Password reset successfully', 'success');
       navigate('/login');
     } catch (err: any) {

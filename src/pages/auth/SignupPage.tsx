@@ -19,11 +19,15 @@ export function SignupPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanEmail = email.trim();
+    if (!fullName.trim()) { pushToast('Enter your full name', 'error'); return; }
+    if (!cleanEmail) { pushToast('Enter your email address', 'error'); return; }
+    if (password.length < 8) { pushToast('Password must be at least 8 characters', 'error'); return; }
     setBusy(true);
     try {
-      await apiClient.post('/auth/signup', { fullName, email, password });
+      await apiClient.post('/auth/signup', { fullName: fullName.trim(), email: cleanEmail, password });
       pushToast('Check your email for the OTP', 'success');
-      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+      navigate(`/verify-email?email=${encodeURIComponent(cleanEmail)}`);
     } catch (err: any) {
       pushToast(err?.response?.data?.message || 'Signup failed', 'error');
     } finally { setBusy(false); }
@@ -35,9 +39,9 @@ export function SignupPage() {
         <h1 className="text-xl font-semibold text-slate-900">Create your account</h1>
         <p className="mt-1 text-sm text-slate-500">Join PrepNest and start preparing.</p>
         <form onSubmit={submit} className="mt-6 space-y-4">
-          <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full name" required />
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" required />
-          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password (min 8 characters)" required minLength={8} />
+          <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full name" required autoComplete="name" autoCapitalize="words" />
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" required autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} />
+          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password (min 8 characters)" required minLength={8} autoComplete="new-password" autoCapitalize="none" autoCorrect="off" spellCheck={false} />
           <Button type="submit" disabled={busy} className="w-full">{busy ? 'Creating...' : 'Create account'}</Button>
         </form>
         <p className="mt-4 text-center text-xs text-slate-500">Already have an account? <Link to="/login" className="text-brand-600 hover:underline">Sign in</Link></p>

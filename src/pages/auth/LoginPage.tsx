@@ -13,33 +13,39 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const submittingRef = useRef(false);
+  // Refs are the source of truth at submit time. Browser autofill can update the
+  // DOM input without firing React onChange, leaving state stale/empty — reading
+  // the live DOM value defeats that race (a common cause of intermittent 401s).
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
   const expired = window.sessionStorage.getItem('prepnest_session_expired');
 
   if (user) return <Navigate to="/" replace />;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('[STUDENT-LOGIN] submit called');
     if (submittingRef.current) {
-      console.log('[STUDENT-LOGIN] DUPLICATE SUBMIT BLOCKED');
       return;
     }
+    const liveEmail = (emailRef.current?.value ?? email).trim();
+    const livePassword = passwordRef.current?.value ?? password;
+    if (!liveEmail) { pushToast('Enter your email address', 'error'); return; }
+    if (!livePassword) { pushToast('Enter your password', 'error'); return; }
     setBusy(true);
     submittingRef.current = true;
     try {
-      console.log('[STUDENT-LOGIN] calling AuthContext.login — email:', email);
-      await login(email, password);
-      console.log('[STUDENT-LOGIN] === LOGIN SUCCESS === redirecting');
+      await login(liveEmail, livePassword);
       window.sessionStorage.removeItem('prepnest_session_expired');
       pushToast('Welcome back!', 'success');
       navigate('/');
     } catch (err: any) {
       const status = err?.response?.status;
       const serverMsg = err?.response?.data?.message;
-      const detailErr = err?.response?.data?.details;
-      console.log('[STUDENT-LOGIN] === LOGIN FAILED === status:', status, 'message:', serverMsg, 'details:', detailErr);
-      console.log('[STUDENT-LOGIN] error object:', err);
-      pushToast(serverMsg || 'Login failed', 'error');
+      if (status === 401) {
+        pushToast('Invalid email or password. Double-check for a typo or trailing space.', 'error');
+      } else {
+        pushToast(serverMsg || 'Login failed', 'error');
+      }
     } finally {
       setBusy(false);
       submittingRef.current = false;
@@ -54,8 +60,8 @@ export function LoginPage() {
           <h1 className="text-xl font-semibold text-slate-900">Sign in to PrepNest</h1>
           <p className="mt-1 text-sm text-slate-500">Continue your learning journey.</p>
           <form onSubmit={submit} className="mt-6 space-y-4">
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" required />
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" required />
+            <Input ref={emailRef} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" required autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} />
+            <Input ref={passwordRef} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" required autoComplete="current-password" autoCapitalize="none" autoCorrect="off" spellCheck={false} />
             <div className="flex justify-end"><Link to="/forgot-password" className="text-xs text-brand-600 hover:underline">Forgot password?</Link></div>
             <Button type="submit" disabled={busy} className="w-full">{busy ? 'Signing in...' : 'Sign in'}</Button>
           </form>

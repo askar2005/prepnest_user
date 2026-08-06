@@ -1,6 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { fetchNotificationDetail, fetchNotifications, fetchAndOpenFile, fetchAndDownloadFile } from '../../api/student';
+import { fetchNotificationDetail, fetchNotifications } from '../../api/student';
+import { downloadPdf } from '../../lib/downloadPdf';
+import { openPdf } from '../../lib/openPdf';
 import { Skeleton } from '../../components/student/Skeleton';
 import { cn } from '../../lib/cn';
 import { ArrowLeft, Calendar, Clock, Paperclip, ExternalLink, Download, Share2, Bookmark, Bell, ChevronRight, Megaphone } from 'lucide-react';
@@ -105,11 +107,11 @@ export default function NotificationDetailPage() {
         <div className="flex flex-wrap gap-3 pt-2">
           {notification.attachmentUrl && (
             <>
-              <button onClick={() => fetchAndOpenFile(notification.attachmentUrl)}
+              <button onClick={() => openPdf(notification.attachmentUrl)}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
                 <Paperclip className="w-4 h-4" /> View Attachment
               </button>
-              <button onClick={() => fetchAndDownloadFile(notification.attachmentUrl, `${notification.title}-attachment`)}
+              <button onClick={() => downloadPdf(notification.attachmentUrl, `${notification.title}-attachment`)}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
                 <Download className="w-4 h-4" /> Download
               </button>

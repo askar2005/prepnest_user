@@ -1,14 +1,15 @@
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTopicDetail, fetchTopicNotes, fetchTopicMcqs, fetchTopicVideos, fetchTopicPyqs, fetchTopicResources, fetchTopicMockTests, submitMcqAnswer, fetchAndOpenFile, fetchAndDownloadFile } from '../../api/student';
+import { fetchTopicDetail, fetchTopicNotes, fetchTopicMcqs, fetchTopicVideos, fetchTopicPyqs, fetchTopicResources, fetchTopicMockTests, submitMcqAnswer } from '../../api/student';
 import { useToast } from '../../components/common/ToastHost';
 import { NoteCard } from '../../components/student/NoteCard';
 import { VideoCard } from '../../components/student/VideoCard';
 import { Skeleton, CardSkeleton } from '../../components/student/Skeleton';
 import { Button } from '../../components/ui/Button';
+import { openPdf } from '../../lib/openPdf';
 import { motion } from 'framer-motion';
-import { BookOpen, HelpCircle, Video, FileText, ClipboardList, Puzzle, ExternalLink, Download, CheckCircle, XCircle, Clock, BarChart3, ChevronRight, MessageCircle, Target, ListChecks } from 'lucide-react';
+import { BookOpen, HelpCircle, Video, FileText, ClipboardList, Puzzle, ExternalLink, CheckCircle, XCircle, Clock, ChevronRight, MessageCircle, Target } from 'lucide-react';
 import { cn } from '../../lib/cn';
 
 type TabKey = 'overview' | 'notes' | 'mcqs' | 'videos' | 'pyqs' | 'mock-tests' | 'resources' | 'discussion';
@@ -247,7 +248,6 @@ function NotesTab({ category, topicId }: { category: string; topicId: string }) 
     queryFn: () => fetchTopicNotes(category, topicId).then(d => d.items),
     staleTime: 30000,
   });
-
   if (isLoading) return <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{[1, 2, 3].map(i => <CardSkeleton key={i} />)}</div>;
   if (!data?.length) return <EmptyState icon={BookOpen} title="No notes yet" message="Notes will appear here once added by your instructor." />;
 
@@ -301,20 +301,14 @@ function PyqsTab({ category, topicId }: { category: string; topicId: string }) {
     queryFn: () => fetchTopicPyqs(category, topicId).then(d => d.items),
     staleTime: 30000,
   });
-
   if (isLoading) return <div className="space-y-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full" />)}</div>;
   if (!data?.length) return <EmptyState icon={FileText} title="No PYQs yet" message="Previous year questions will appear here once added." />;
 
   return (
-    <div className="space-y-3">
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {data.map((p: any) => (
-        <div key={p.id} className="rounded-2xl bg-white border border-slate-100 p-5 flex items-center justify-between shadow-card hover:shadow-hover transition-all">
-          <div>
-            <p className="text-sm font-semibold text-slate-900">{p.title}</p>
-            <p className="text-xs text-slate-400">Year: {p.year}</p>
-          </div>
-          {p.pdfUrl && <PyqActions url={p.pdfUrl} title={p.title} />}
-        </div>
+        // Same card component Notes uses, so View/Download behave identically
+        <NoteCard key={p.id} title={p.title} description={[p.year && `Year ${p.year}`, p.description].filter(Boolean).join(' · ') || undefined} fileUrl={p.pdfUrl || p.fileUrl} fileSize={p.fileSize} tags={p.tags} />
       ))}
     </div>
   );
@@ -382,7 +376,7 @@ function ResourcesTab({ category, topicId }: { category: string; topicId: string
             </div>
             {r.externalUrl && (
               <button
-                onClick={async () => { try { await fetchAndOpenFile(r.externalUrl); } catch {} }}
+                onClick={() => openPdf(r.externalUrl)}
                 className="shrink-0 flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-700 transition-colors"
               >
                 <ExternalLink className="w-3.5 h-3.5" /> View
@@ -531,22 +525,6 @@ function McqPracticeSection({ mcqs }: { mcqs: any[] }) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function PyqActions({ url, title }: { url: string; title: string }) {
-  const [busy, setBusy] = useState(false);
-  return (
-    <div className="flex gap-2">
-      <button disabled={busy} onClick={async () => { setBusy(true); try { await fetchAndOpenFile(url); } catch {} finally { setBusy(false); } }}
-        className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-700 transition-colors">
-        <ExternalLink className="w-3.5 h-3.5" />{busy ? 'Opening...' : 'View'}
-      </button>
-      <button disabled={busy} onClick={async () => { setBusy(true); try { await fetchAndDownloadFile(url, `${title}.pdf`); } catch {} finally { setBusy(false); } }}
-        className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700 transition-colors">
-        <Download className="w-3.5 h-3.5" />{busy ? 'Loading...' : 'Download'}
-      </button>
     </div>
   );
 }

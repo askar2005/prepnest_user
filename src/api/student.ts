@@ -143,11 +143,6 @@ export async function fetchNoteDetail(noteId: string) {
   return data;
 }
 
-export async function fetchAndOpenFile(fileUrl: string): Promise<void> {
-  if (!fileUrl) throw new Error('Invalid file URL');
-  window.open(fileUrl, '_blank', 'noopener,noreferrer');
-}
-
 export async function fetchNotifications(params?: Record<string, any>) {
   const { data } = await apiClient.get('/notifications', { params });
   return data as { items: any[]; total: number; page: number; limit: number };
@@ -166,9 +161,4 @@ export async function fetchRecentNotifications() {
 export async function fetchUnreadNotificationCount() {
   const { data } = await apiClient.get('/notifications/unread-count');
   return data as { count: number };
-}
-
-export async function fetchAndDownloadFile(fileUrl: string, _fileName: string): Promise<void> {
-  if (!fileUrl) throw new Error('Invalid file URL');
-  window.open(fileUrl, '_blank', 'noopener,noreferrer');
 }

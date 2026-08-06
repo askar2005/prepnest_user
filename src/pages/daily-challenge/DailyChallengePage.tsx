@@ -69,6 +69,7 @@ export function DailyChallengePage() {
             showExplanation={showExplanation}
             setShowExplanation={setShowExplanation}
             isCorrect={lastCorrect}
+            lastAnswer={lastAnswer}
             correctAnswer={challenge.correctAnswer}
             explanation={challenge.explanation}
             submitting={submitMutation.isPending}
@@ -117,7 +118,7 @@ function NoChallengeCard() {
 function ChallengeCard(props: any) {
   const {
     challenge, answered, selectedAnswer, setSelectedAnswer, showExplanation, setShowExplanation,
-    isCorrect, correctAnswer, explanation, submitting, onSubmit,
+    isCorrect, lastAnswer, correctAnswer, explanation, submitting, onSubmit,
   } = props;
 
   return (

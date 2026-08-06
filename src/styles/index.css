@@ -19,3 +19,32 @@ body {
 * {
   box-sizing: border-box;
 }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes flame-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+@keyframes ring-draw {
+  from { stroke-dashoffset: var(--ring-circ); }
+  to { stroke-dashoffset: var(--ring-off); }
+}
+
+.animate-fade-up { animation: fade-up 0.45s ease-out both; }
+.animate-pop-in { animation: pop-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.animate-flame--pulse { animation: flame-pulse 1.2s ease-in-out infinite; transform-origin: center; }
+.animate-ring-draw { animation: ring-draw 0.8s ease-out forwards; }
+.dc-option {
+  transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.dc-option:active { transform: scale(0.985); }

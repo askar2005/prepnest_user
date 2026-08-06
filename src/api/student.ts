@@ -95,6 +95,11 @@ export async function getDailyChallengeStreak() {
   return data as { currentStreak: number; longestStreak: number; lastCompletedDate: string | null };
 }
 
+export async function getDailyChallengeHistory(page = 1, limit = 20) {
+  const { data } = await apiClient.get(`/daily-challenge/history?page=${page}&limit=${limit}`);
+  return data as { items: any[]; total: number; page: number; limit: number };
+}
+
 
 
 // Topic-scoped endpoints

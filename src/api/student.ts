@@ -60,13 +60,28 @@ export async function submitMcqAnswer(mcqId: string, answer: string) {
   return data;
 }
 
-export async function submitMockTest(mockTestId: string, answers: Record<string, string>) {
-  const { data } = await apiClient.post('/student/mock-tests/submit', { mockTestId, answers });
+export async function submitMockTest(mockTestId: string, answers: Record<string, string | string[]>, timeSpent?: number) {
+  const { data } = await apiClient.post('/student/mock-tests/submit', { mockTestId, answers, timeSpent });
   return data;
 }
 
 export async function fetchMockTestDetail(id: string) {
   const { data } = await apiClient.get(`/student/mock-tests/${id}`);
+  return data;
+}
+
+export async function fetchMockTestsList(params?: Record<string, any>) {
+  const { data } = await apiClient.get('/mock-tests', { params });
+  return data as { items: any[]; total: number; page: number; limit: number };
+}
+
+export async function fetchMyMockTestResults(mockTestId?: string) {
+  const { data } = await apiClient.get('/student/mock-tests/results', { params: mockTestId ? { mockTestId } : undefined });
+  return data as { items: any[]; total: number };
+}
+
+export async function fetchMockTestResult(resultId: string) {
+  const { data } = await apiClient.get(`/student/mock-tests/results/${resultId}`);
   return data;
 }
 

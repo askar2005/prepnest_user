@@ -13,6 +13,9 @@ import StudentPreparationPage from '../pages/preparation/PreparationPage';
 import TopicPage from '../pages/preparation/TopicPage';
 import { BookmarksPage } from '../pages/bookmarks/BookmarksPage';
 import { MockTestPage } from '../pages/mock-tests/MockTestPage';
+import { MockTestsListPage } from '../pages/mock-tests/MockTestsListPage';
+import { MockTestsResultsPage } from '../pages/mock-tests/MockTestsResultsPage';
+import { MockTestResultPage } from '../pages/mock-tests/MockTestResultPage';
 import { DailyChallengePage } from '../pages/daily-challenge/DailyChallengePage';
 import { LeaderboardPage } from '../pages/leaderboard/LeaderboardPage';
 import { ProfilePage } from '../pages/profile/ProfilePage';
@@ -38,7 +41,9 @@ export default function App() {
             <Route path="/notifications" element={<NotificationsListPage />} />
             <Route path="/notifications/:id" element={<NotificationDetailPage />} />
             <Route path="/bookmarks" element={<BookmarksPage />} />
-            <Route path="/mock-tests" element={<MockTestPage />} />
+            <Route path="/mock-tests" element={<MockTestsListPage />} />
+            <Route path="/mock-tests/results" element={<MockTestsResultsPage />} />
+            <Route path="/mock-tests/results/:resultId" element={<MockTestResultPage />} />
             <Route path="/mock-tests/:id" element={<MockTestPage />} />
             <Route path="/daily-challenge" element={<DailyChallengePage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />

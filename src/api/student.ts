@@ -123,6 +123,62 @@ export async function fetchTopicDetail(categorySlug: string, topicId: string) {
   return data;
 }
 
+// ─── Discussion ───
+export interface DiscussionAuthor {
+  id: string | null;
+  type: 'admin' | 'user';
+  name: string;
+}
+
+export interface DiscussionCommentItem {
+  id: string;
+  content: string;
+  isEdited: boolean;
+  createdAt: string;
+  updatedAt: string;
+  parentId: string | null;
+  replyCount: number;
+  depth?: number;
+  author: DiscussionAuthor;
+}
+
+export interface DiscussionPage {
+  items: DiscussionCommentItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export async function fetchDiscussion(topicId: string, page = 1, limit = 20) {
+  const { data } = await apiClient.get(`/student/topics/${topicId}/discussion`, { params: { page, limit } });
+  return data as DiscussionPage;
+}
+
+export async function createDiscussionComment(topicId: string, content: string) {
+  const { data } = await apiClient.post(`/student/topics/${topicId}/discussion`, { content });
+  return data as DiscussionCommentItem;
+}
+
+export async function updateDiscussionComment(commentId: string, content: string) {
+  const { data } = await apiClient.put(`/student/discussion/${commentId}`, { content });
+  return data as DiscussionCommentItem;
+}
+
+export async function deleteDiscussionComment(commentId: string) {
+  const { data } = await apiClient.delete(`/student/discussion/${commentId}`);
+  return data;
+}
+
+export async function fetchDiscussionReplies(commentId: string, page = 1, limit = 20) {
+  const { data } = await apiClient.get(`/student/discussion/${commentId}/replies`, { params: { page, limit } });
+  return data as DiscussionPage;
+}
+
+export async function createDiscussionReply(commentId: string, content: string) {
+  const { data } = await apiClient.post(`/student/discussion/${commentId}/reply`, { content });
+  return data as DiscussionCommentItem;
+}
+
 export async function fetchTopicDashboard(categorySlug: string, topicId: string) {
   const { data } = await apiClient.get(`/preparation/${categorySlug}/topics/${topicId}/dashboard`);
   return data;

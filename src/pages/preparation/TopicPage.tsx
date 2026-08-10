@@ -6,6 +6,7 @@ import { useToast } from '../../components/common/ToastHost';
 import { NoteCard } from '../../components/student/NoteCard';
 import { VideoCard } from '../../components/student/VideoCard';
 import { Skeleton, CardSkeleton } from '../../components/student/Skeleton';
+import DiscussionSection from '../../components/student/DiscussionSection';
 import { Button } from '../../components/ui/Button';
 import { openPdf } from '../../lib/openPdf';
 import { motion } from 'framer-motion';
@@ -164,7 +165,7 @@ export default function TopicPage() {
           {activeTab === 'pyqs' && <PyqsTab category={category!} topicId={topicId!} />}
           {activeTab === 'mock-tests' && <MockTestsTab category={category!} topicId={topicId!} />}
           {activeTab === 'resources' && <ResourcesTab category={category!} topicId={topicId!} />}
-          {activeTab === 'discussion' && <DiscussionTab />}
+          {activeTab === 'discussion' && <DiscussionSection topicId={topicId!} />}
         </motion.div>
       </div>
     </div>
@@ -385,19 +386,6 @@ function ResourcesTab({ category, topicId }: { category: string; topicId: string
           </div>
         </div>
       ))}
-    </div>
-  );
-}
-
-/* ═══════════ DISCUSSION ═══════════ */
-function DiscussionTab() {
-  return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
-        <MessageCircle className="w-8 h-8 text-slate-400" />
-      </div>
-      <p className="text-lg font-semibold text-slate-600">Discussion Coming Soon</p>
-      <p className="text-sm text-slate-400 mt-1">Ask questions and discuss with peers.</p>
     </div>
   );
 }

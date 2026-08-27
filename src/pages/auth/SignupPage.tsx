@@ -37,7 +37,7 @@ export function SignupPage() {
     <div className="flex min-h-screen items-center justify-center bg-bg px-4">
       <div className="w-full max-w-sm rounded-[16px] border border-slate-200 bg-white p-6 shadow-soft">
         <h1 className="text-xl font-semibold text-slate-900">Create your account</h1>
-        <p className="mt-1 text-sm text-slate-500">Join PrepNest and start preparing.</p>
+        <p className="mt-1 text-sm text-slate-500">Join Kathir Academy and start preparing.</p>
         <form onSubmit={submit} className="mt-6 space-y-4">
           <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full name" required autoComplete="name" autoCapitalize="words" />
           <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" required autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} />

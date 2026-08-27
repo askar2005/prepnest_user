@@ -74,7 +74,7 @@ export function SettingsPage() {
         <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card space-y-3 text-sm text-slate-600 max-w-md">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center"><span className="text-white font-bold">P</span></div>
-            <div><p className="text-base font-bold text-slate-900">PrepNest</p><p className="text-xs text-slate-400">Student Dashboard</p></div>
+            <div><p className="text-base font-bold text-slate-900">Kathir Academy</p><p className="text-xs text-slate-400">Student Dashboard</p></div>
           </div>
           <p>Version 1.0.0</p>
           <p>A professional platform for exam preparation with Notes, MCQs, Videos, and Mock Tests.</p>

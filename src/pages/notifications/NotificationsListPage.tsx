@@ -50,7 +50,7 @@ export default function NotificationsListPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Important Notifications</h1>
-        <p className="text-sm text-slate-500 mt-1">Latest announcements from PrepNest.</p>
+        <p className="text-sm text-slate-500 mt-1">Latest announcements from Kathir Academy.</p>
       </div>
 
       {/* Search + Filters */}

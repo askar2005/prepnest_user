@@ -48,9 +48,9 @@ export function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0">
             <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">P</span>
+              <span className="text-white font-bold text-[11px] leading-none tracking-tight">KA</span>
             </div>
-            <span className="text-lg font-bold text-slate-900 hidden sm:block">PrepNest</span>
+            <span className="text-lg font-bold text-slate-900 hidden sm:block">Kathir Academy</span>
           </Link>
 
           {/* Search */}
@@ -89,9 +89,9 @@ export function Navbar() {
         <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">P</span>
+              <span className="text-white font-bold text-[11px] leading-none tracking-tight">KA</span>
             </div>
-            <span className="text-lg font-bold text-slate-900">PrepNest</span>
+            <span className="text-lg font-bold text-slate-900">Kathir Academy</span>
           </div>
           <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-lg hover:bg-slate-100 text-slate-400">
             <X size={20} />

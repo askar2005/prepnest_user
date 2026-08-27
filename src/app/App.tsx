@@ -22,11 +22,13 @@ import { ProfilePage } from '../pages/profile/ProfilePage';
 import { SettingsPage } from '../pages/settings/SettingsPage';
 import NotificationsListPage from '../pages/notifications/NotificationsListPage';
 import NotificationDetailPage from '../pages/notifications/NotificationDetailPage';
+import { SplashScreen } from '../components/common/SplashScreen';
 
 export default function App() {
   return (
     <AuthProvider>
       <ToastProvider>
+        <SplashScreen />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />

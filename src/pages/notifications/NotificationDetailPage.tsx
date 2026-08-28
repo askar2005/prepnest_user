@@ -53,7 +53,11 @@ export default function NotificationDetailPage() {
         queryClient.invalidateQueries({ queryKey: ['recent-notifications'] }),
       ]);
     },
-    onError: (err: any) => pushToast(err?.response?.data?.message || 'Failed to mark notification as read', 'error'),
+    onError: (err: any) => {
+      const status = err?.response?.status;
+      if (status === 404) return;
+      pushToast(err?.response?.data?.message || 'Failed to mark notification as read', 'error');
+    },
   });
 
   useEffect(() => {
@@ -111,12 +115,10 @@ export default function NotificationDetailPage() {
       <div className="space-y-6">
         {/* Title + Meta (if not in banner) */}
         {notification.bannerUrl && <h1 className="text-2xl font-bold text-slate-900">{notification.title}</h1>}
-        {!notification.isRead && (
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-700 bg-brand-50 border border-brand-100 rounded-full px-3 py-1 w-fit">
-            <span className="h-2 w-2 rounded-full bg-red-500" />
-            Unread
-          </span>
-        )}
+        <span className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-full px-3 py-1 w-fit border ${notification.isRead ? 'text-emerald-700 bg-emerald-50 border-emerald-100' : 'text-brand-700 bg-brand-50 border-brand-100'}`}>
+          <span className={`h-2 w-2 rounded-full ${notification.isRead ? 'bg-emerald-500' : 'bg-red-500'}`} />
+          {notification.isRead ? 'Read' : 'Unread'}
+        </span>
 
         {/* Badges */}
         <div className="flex flex-wrap items-center gap-3">

@@ -31,6 +31,7 @@ export function Navbar() {
     queryFn: () => fetchUnreadNotificationCount(),
     staleTime: 15000,
     refetchInterval: 30000,
+    retry: false,
   });
 
   const count = unread?.count || 0;

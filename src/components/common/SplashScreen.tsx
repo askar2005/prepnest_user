@@ -1,22 +1,36 @@
 import { useEffect, useState } from 'react';
 
-export function SplashScreen() {
+export function SplashScreen({ ready = true }: { ready?: boolean }) {
   const [closing, setClosing] = useState(false);
   const [visible, setVisible] = useState(true);
+  const [minElapsed, setMinElapsed] = useState(false);
 
   useEffect(() => {
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-    const holdMs = reducedMotion ? 650 : 1700;
+    const holdMs = reducedMotion ? 500 : 1200;
     const fadeMs = reducedMotion ? 150 : 260;
 
-    const closeTimer = window.setTimeout(() => setClosing(true), holdMs);
-    const hideTimer = window.setTimeout(() => setVisible(false), holdMs + fadeMs);
+    const minTimer = window.setTimeout(() => setMinElapsed(true), holdMs);
+    const closeTimer = window.setTimeout(() => {
+      if (ready) setClosing(true);
+    }, holdMs);
+    const hideTimer = window.setTimeout(() => {
+      if (ready) setVisible(false);
+    }, holdMs + fadeMs);
 
     return () => {
+      window.clearTimeout(minTimer);
       window.clearTimeout(closeTimer);
       window.clearTimeout(hideTimer);
     };
-  }, []);
+  }, [ready]);
+
+  useEffect(() => {
+    if (!visible || !ready || !minElapsed) return;
+    setClosing(true);
+    const fadeTimer = window.setTimeout(() => setVisible(false), 260);
+    return () => window.clearTimeout(fadeTimer);
+  }, [minElapsed, ready, visible]);
 
   if (!visible) return null;
 

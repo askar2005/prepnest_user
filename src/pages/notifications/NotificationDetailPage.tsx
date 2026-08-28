@@ -1,9 +1,11 @@
+import { useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { fetchNotificationDetail, fetchNotifications } from '../../api/student';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { fetchNotificationDetail, fetchNotifications, markNotificationAsRead } from '../../api/student';
 import { openPdf } from '../../lib/openPdf';
 import { Skeleton } from '../../components/student/Skeleton';
 import { cn } from '../../lib/cn';
+import { useToast } from '../../components/common/ToastHost';
 import { ArrowLeft, Calendar, Clock, Paperclip, ExternalLink, Share2, Bookmark, Bell, ChevronRight, Megaphone } from 'lucide-react';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -18,12 +20,18 @@ const PRIORITY_STYLES: Record<string, string> = {
 };
 
 export default function NotificationDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ id?: string; notificationId?: string }>();
+  const notificationId = params.notificationId || params.id;
+  const queryClient = useQueryClient();
+  const { pushToast } = useToast();
+  const markedRef = useRef(false);
 
   const { data: notification, isLoading } = useQuery({
-    queryKey: ['notification', id],
-    queryFn: () => fetchNotificationDetail(id!),
+    queryKey: ['notification', notificationId],
+    queryFn: () => fetchNotificationDetail(notificationId!),
+    enabled: !!notificationId,
     staleTime: 30000,
+    retry: false,
   });
 
   const { data: related } = useQuery({
@@ -31,7 +39,28 @@ export default function NotificationDetailPage() {
     queryFn: () => fetchNotifications({ limit: 4 }),
     staleTime: 60000,
     enabled: !!notification,
+    retry: false,
   });
+
+  const markReadMutation = useMutation({
+    mutationFn: markNotificationAsRead,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['notif-unread'] }),
+        queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+        queryClient.invalidateQueries({ queryKey: ['notification', notificationId] }),
+        queryClient.invalidateQueries({ queryKey: ['notifications-related'] }),
+        queryClient.invalidateQueries({ queryKey: ['recent-notifications'] }),
+      ]);
+    },
+    onError: (err: any) => pushToast(err?.response?.data?.message || 'Failed to mark notification as read', 'error'),
+  });
+
+  useEffect(() => {
+    if (!notification?.id || notification.isRead || markedRef.current) return;
+    markedRef.current = true;
+    markReadMutation.mutate(notification.id);
+  }, [notification, markReadMutation]);
 
   if (isLoading) {
     return <div className="space-y-6"><Skeleton className="h-64 w-full rounded-3xl" /><Skeleton className="h-32 w-3/4" /><Skeleton className="h-48 w-full" /></div>;
@@ -46,7 +75,7 @@ export default function NotificationDetailPage() {
   }
 
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  const relatedItems = (related?.items || []).filter((n: any) => n.id !== id).slice(0, 3);
+  const relatedItems = (related?.items || []).filter((n: any) => n.id !== notificationId).slice(0, 3);
   const previewUrl = (url: string) => url.startsWith('http') ? url : url;
 
   return (
@@ -82,6 +111,12 @@ export default function NotificationDetailPage() {
       <div className="space-y-6">
         {/* Title + Meta (if not in banner) */}
         {notification.bannerUrl && <h1 className="text-2xl font-bold text-slate-900">{notification.title}</h1>}
+        {!notification.isRead && (
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-700 bg-brand-50 border border-brand-100 rounded-full px-3 py-1 w-fit">
+            <span className="h-2 w-2 rounded-full bg-red-500" />
+            Unread
+          </span>
+        )}
 
         {/* Badges */}
         <div className="flex flex-wrap items-center gap-3">

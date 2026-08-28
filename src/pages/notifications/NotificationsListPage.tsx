@@ -1,9 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchNotifications } from '../../api/student';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { fetchNotifications, markAllNotificationsAsRead } from '../../api/student';
 import { Skeleton } from '../../components/student/Skeleton';
 import { cn } from '../../lib/cn';
 import { Bell, Search, ChevronRight, Calendar, Pin, Paperclip, ExternalLink, AlertCircle, Bookmark, Share2, Filter } from 'lucide-react';
+import { useToast } from '../../components/common/ToastHost';
 
 const CATEGORY_LABELS: Record<string, string> = {
   PLACEMENT_DRIVES: 'Placement', INTERNSHIPS: 'Internships', HACKATHONS: 'Hackathons',
@@ -19,38 +21,58 @@ const PRIORITY_STYLES: Record<string, string> = {
 const CATEGORY_FILTERS = ['', 'PLACEMENT_DRIVES', 'INTERNSHIPS', 'HACKATHONS', 'WORKSHOP', 'EXAM_UPDATES', 'SCHOLARSHIPS', 'COLLEGE_ANNOUNCEMENTS', 'GENERAL'];
 
 export default function NotificationsListPage() {
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { pushToast } = useToast();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [page, setPage] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params: any = { page, limit: 20 };
-      if (category) params.category = category;
-      const data = await fetchNotifications(params);
-      setNotifications(data.items || []);
-    } catch { setNotifications([]); }
-    finally { setLoading(false); }
-  }, [page, category]);
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['notifications', page, category],
+    queryFn: () => fetchNotifications({ page, limit: 20, ...(category ? { category } : {}) }),
+    staleTime: 15000,
+    retry: false,
+  });
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  const markAllMutation = useMutation({
+    mutationFn: markAllNotificationsAsRead,
+    onSuccess: async () => {
+      pushToast('All notifications marked as read', 'success');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['notif-unread'] }),
+        queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+        queryClient.invalidateQueries({ queryKey: ['recent-notifications'] }),
+        refetch(),
+      ]);
+    },
+    onError: (err: any) => pushToast(err?.response?.data?.message || 'Failed to mark notifications as read', 'error'),
+  });
 
   const filtered = search
-    ? notifications.filter(n => n.title?.toLowerCase().includes(search.toLowerCase()) || n.summary?.toLowerCase().includes(search.toLowerCase()))
-    : notifications;
+    ? (data?.items || []).filter(n => n.title?.toLowerCase().includes(search.toLowerCase()) || n.summary?.toLowerCase().includes(search.toLowerCase()))
+    : (data?.items || []);
 
   const pinned = filtered.filter(n => n.isPinned);
   const regular = filtered.filter(n => !n.isPinned);
+  const unreadCount = useMemo(() => (data?.items || []).filter((n) => !n.isRead).length, [data]);
 
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
+      <div className="flex items-start justify-between gap-3">
+        <div>
         <h1 className="text-2xl font-bold text-slate-900">Important Notifications</h1>
         <p className="text-sm text-slate-500 mt-1">Latest announcements from Kathir Academy.</p>
+      </div>
+        <button
+          onClick={() => markAllMutation.mutate()}
+          disabled={unreadCount === 0 || markAllMutation.isPending}
+          className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Bookmark className="w-4 h-4" />
+          {markAllMutation.isPending ? 'Updating...' : 'Mark all as read'}
+        </button>
       </div>
 
       {/* Search + Filters */}
@@ -59,7 +81,10 @@ export default function NotificationsListPage() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search notifications..." className="w-full h-11 pl-10 pr-4 text-sm bg-white border border-slate-200 rounded-2xl outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100" />
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <button onClick={() => setShowFilters((v) => !v)} className="sm:hidden inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-600 bg-white">
+          <Filter className="w-4 h-4" /> Filters
+        </button>
+        <div className={`${showFilters ? 'flex' : 'hidden'} sm:flex gap-2 overflow-x-auto pb-1`}>
           {CATEGORY_FILTERS.map(c => (
             <button key={c || 'all'} onClick={() => { setCategory(c); setPage(1); }}
               className={cn(
@@ -72,9 +97,9 @@ export default function NotificationsListPage() {
       </div>
 
       {/* Loading */}
-      {loading ? (
+      {isLoading ? (
         <div className="space-y-4">{[1, 2, 3].map(i => <Skeleton key={i} className="h-28 w-full rounded-2xl" />)}</div>
-      ) : notifications.length === 0 ? (
+      ) : (data?.items || []).length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
             <Bell className="w-8 h-8 text-slate-400" />
@@ -116,7 +141,10 @@ function NotificationCard({ n }: { n: any }) {
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
   return (
-    <Link to={`/notifications/${n.id}`} className="group block rounded-2xl bg-white border border-slate-100 p-5 shadow-card hover:shadow-hover transition-all hover:-translate-y-0.5">
+    <Link to={`/notifications/${n.id}`} className={cn(
+      'group block rounded-2xl border p-5 shadow-card hover:shadow-hover transition-all hover:-translate-y-0.5',
+      n.isRead ? 'bg-white border-slate-100' : 'bg-brand-50/40 border-brand-100'
+    )}>
       <div className="flex items-start gap-4">
         {/* Thumbnail */}
         {n.thumbnailUrl ? (
@@ -130,13 +158,14 @@ function NotificationCard({ n }: { n: any }) {
         <div className="flex-1 min-w-0">
           {/* Badges */}
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            {!n.isRead && <span className="h-2.5 w-2.5 rounded-full bg-red-500" />}
             <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-brand-50 text-brand-700">{CATEGORY_LABELS[n.category] || n.category}</span>
             {n.priority && <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-medium', PRIORITY_STYLES[n.priority])}>{n.priority}</span>}
             {n.attachmentUrl && <Paperclip className="w-3 h-3 text-slate-400" />}
             {n.externalLink && <ExternalLink className="w-3 h-3 text-slate-400" />}
           </div>
 
-          <h3 className="text-sm font-semibold text-slate-900 group-hover:text-brand-600 transition-colors">{n.title}</h3>
+          <h3 className={cn('text-sm group-hover:text-brand-600 transition-colors', n.isRead ? 'font-medium text-slate-800' : 'font-semibold text-slate-900')}>{n.title}</h3>
           {n.summary && <p className="text-sm text-slate-500 mt-0.5 line-clamp-2">{n.summary}</p>}
 
           <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">

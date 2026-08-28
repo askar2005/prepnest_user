@@ -238,3 +238,13 @@ export async function fetchUnreadNotificationCount() {
   const { data } = await apiClient.get('/notifications/unread-count');
   return data as { count: number };
 }
+
+export async function markNotificationAsRead(id: string) {
+  const { data } = await apiClient.post(`/notifications/${id}/read`);
+  return data as { ok: boolean };
+}
+
+export async function markAllNotificationsAsRead() {
+  const { data } = await apiClient.post('/notifications/mark-all-read');
+  return data as { ok: boolean; marked: number };
+}

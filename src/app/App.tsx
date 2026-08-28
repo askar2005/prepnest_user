@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { ToastProvider } from '../components/common/ToastHost';
-import { AuthProvider } from '../context/AuthContext';
+import { AuthProvider, useAuth } from '../context/AuthContext';
 import { AppLayout } from './AppLayout';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { SignupPage } from '../pages/auth/SignupPage';
@@ -28,33 +28,64 @@ export default function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <SplashScreen />
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/verify-email" element={<VerifyEmailPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/verify-reset-otp" element={<VerifyResetOtpPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/preparation/:category" element={<StudentPreparationPage />} />
-            <Route path="/preparation/:category/topics/:topicId/*" element={<TopicPage />} />
-            <Route path="/notifications" element={<NotificationsListPage />} />
-            <Route path="/notifications/:id" element={<NotificationDetailPage />} />
-            <Route path="/bookmarks" element={<BookmarksPage />} />
-            <Route path="/mock-tests" element={<MockTestsListPage />} />
-            <Route path="/mock-tests/results" element={<MockTestsResultsPage />} />
-            <Route path="/mock-tests/results/:resultId" element={<MockTestResultPage />} />
-            <Route path="/mock-tests/:id" element={<MockTestPage />} />
-            <Route path="/daily-challenge" element={<DailyChallengePage />} />
-            <Route path="/leaderboard" element={<LeaderboardPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <AppRouter />
       </ToastProvider>
     </AuthProvider>
   );
+}
+
+function AppRouter() {
+  const auth = useAuth();
+
+  return (
+    <>
+      <SplashScreen ready={!auth.loading} />
+      <Routes>
+        <Route path="/login" element={<PublicOnly><LoginPage /></PublicOnly>} />
+        <Route path="/signup" element={<PublicOnly><SignupPage /></PublicOnly>} />
+        <Route path="/verify-email" element={<PublicOnly><VerifyEmailPage /></PublicOnly>} />
+        <Route path="/forgot-password" element={<PublicOnly><ForgotPasswordPage /></PublicOnly>} />
+        <Route path="/verify-reset-otp" element={<PublicOnly><VerifyResetOtpPage /></PublicOnly>} />
+        <Route path="/reset-password" element={<PublicOnly><ResetPasswordPage /></PublicOnly>} />
+        <Route element={<ProtectedOnly><AppLayout /></ProtectedOnly>}>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/preparation/:category" element={<StudentPreparationPage />} />
+          <Route path="/preparation/:category/topics/:topicId/*" element={<TopicPage />} />
+          <Route path="/notifications" element={<NotificationsListPage />} />
+          <Route path="/notifications/:notificationId" element={<NotificationDetailPage />} />
+          <Route path="/notifications/:id" element={<NotificationDetailPage />} />
+          <Route path="/bookmarks" element={<BookmarksPage />} />
+          <Route path="/mock-tests" element={<MockTestsListPage />} />
+          <Route path="/mock-tests/results" element={<MockTestsResultsPage />} />
+          <Route path="/mock-tests/results/:resultId" element={<MockTestResultPage />} />
+          <Route path="/mock-tests/:id" element={<MockTestPage />} />
+          <Route path="/daily-challenge" element={<DailyChallengePage />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+        </Route>
+        <Route path="*" element={<DefaultRoute />} />
+      </Routes>
+    </>
+  );
+}
+
+function PublicOnly({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
+function ProtectedOnly({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function DefaultRoute() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return <Navigate to={user ? '/' : '/login'} replace />;
 }

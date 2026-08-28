@@ -47,6 +47,7 @@ export function DashboardPage() {
     queryKey: ['recent-notifications'],
     queryFn: () => fetchRecentNotifications(),
     staleTime: 30000,
+    retry: false,
   });
 
   const allItems = filterVisiblePreparationCategories(categoriesData?.items || []);
@@ -112,7 +113,7 @@ export function DashboardPage() {
               const fmt = new Date(n.publishDate || n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
               const priorityStyle = n.priority === 'URGENT' ? 'bg-red-50 text-red-700' : n.priority === 'HIGH' ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700';
               return (
-                <Link key={n.id} to={`/notifications/${n.id}`} className="group flex items-start gap-3 rounded-2xl bg-white border border-slate-100 p-4 shadow-card hover:shadow-hover transition-all hover:-translate-y-0.5">
+                <Link key={n.id} to={`/notifications/${n.id}`} className={`group flex items-start gap-3 rounded-2xl border p-4 shadow-card hover:shadow-hover transition-all hover:-translate-y-0.5 ${n.isRead ? 'bg-white border-slate-100' : 'bg-brand-50/40 border-brand-100'}`}>
                   {n.thumbnailUrl ? (
                     <img src={n.thumbnailUrl} alt="" className="w-10 h-10 rounded-lg object-cover bg-slate-100 shrink-0" />
                   ) : (
@@ -122,10 +123,11 @@ export function DashboardPage() {
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1">
+                      {!n.isRead && <span className="h-2.5 w-2.5 rounded-full bg-red-500" />}
                       <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-slate-100 text-slate-600">{n.category?.replace(/_/g, ' ')}</span>
                       {n.priority && <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${priorityStyle}`}>{n.priority}</span>}
                     </div>
-                    <p className="text-sm font-semibold text-slate-900 group-hover:text-brand-600 transition-colors line-clamp-1">{n.title}</p>
+                    <p className={`text-sm group-hover:text-brand-600 transition-colors line-clamp-1 ${n.isRead ? 'font-medium text-slate-800' : 'font-semibold text-slate-900'}`}>{n.title}</p>
                     <p className="text-[10px] text-slate-400 mt-0.5">{fmt}</p>
                   </div>
                 </Link>
@@ -170,5 +172,3 @@ export function DashboardPage() {
 const CATEGORY_LABELS: Record<string, string> = {
   gate: 'GATE Preparation', aptitude: 'Aptitude Preparation', interview: 'Interview Preparation', technical: 'Technical Preparation',
 };
-
-

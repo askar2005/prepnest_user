@@ -6,7 +6,7 @@ const productionApiUrl = 'https://prednest-backend-e45z.onrender.com/api';
 const devFallback = 'http://localhost:4000/api';
 const fallback = isLocalDev ? devFallback : productionApiUrl;
 
-const raw = import.meta.env.VITE_API_URL || fallback;
+const raw = isLocalDev ? (import.meta.env.VITE_API_URL || fallback) : productionApiUrl;
 // Safety net: ensure base URL always ends with /api
 const base = raw.replace(/\/+$/, '');
 const finalBaseURL = base.endsWith('/api') ? base : `${base}/api`;

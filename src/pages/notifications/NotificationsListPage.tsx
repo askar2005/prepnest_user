@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchNotifications, markAllNotificationsAsRead } from '../../api/student';
 import { Skeleton } from '../../components/student/Skeleton';
 import { cn } from '../../lib/cn';
-import { Bell, Search, ChevronRight, Calendar, Pin, Paperclip, ExternalLink, AlertCircle, Bookmark, Share2, Filter } from 'lucide-react';
+import { Bell, Search, ChevronRight, Calendar, Pin, Paperclip, ExternalLink, AlertCircle, CheckCheck, Share2, Filter } from 'lucide-react';
 import { useToast } from '../../components/common/ToastHost';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -70,7 +70,7 @@ export default function NotificationsListPage() {
           disabled={unreadCount === 0 || markAllMutation.isPending}
           className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Bookmark className="w-4 h-4" />
+          <CheckCheck className="w-4 h-4" />
           {markAllMutation.isPending ? 'Updating...' : 'Mark all as read'}
         </button>
       </div>

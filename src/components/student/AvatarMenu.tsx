@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { User, Bookmark, BarChart3, Download, Award, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { User, BarChart3, Download, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { cn } from '../../lib/cn';
 
 export function AvatarMenu() {
@@ -19,9 +19,7 @@ export function AvatarMenu() {
   const items = [
     { label: 'My Profile', icon: User, action: () => navigate('/profile') },
     { label: 'Progress', icon: BarChart3, action: () => navigate('/leaderboard') },
-    { label: 'Bookmarks', icon: Bookmark, action: () => navigate('/bookmarks') },
-    { label: 'Downloads', icon: Download, action: () => {} },
-    { label: 'Certificates', icon: Award, action: () => {} },
+    { label: 'Downloads', icon: Download, action: () => navigate('/downloads') },
     { label: 'Settings', icon: Settings, action: () => navigate('/settings') },
   ];
 

@@ -2,6 +2,7 @@ import { FileText, Download, Eye } from 'lucide-react';
 import { cn } from '../../lib/cn';
 import { downloadPdf } from '../../lib/downloadPdf';
 import { openPdf } from '../../lib/openPdf';
+import { recordDownload } from '../../lib/downloadHistory';
 import { useState } from 'react';
 
 interface NoteCardProps {
@@ -40,7 +41,7 @@ export function NoteCard({ title, description, fileUrl, fileSize, downloads, pag
             <button onClick={() => openPdf(fileUrl)} className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-700 transition-colors">
               <Eye className="w-3.5 h-3.5" /> Open PDF
             </button>
-            <button disabled={busy === 'dl'} onClick={async () => { setBusy('dl'); try { await downloadPdf(fileUrl, title.replace(/\s+/g, '_') + '.pdf'); } catch {} finally { setBusy(null); }}} className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700 transition-colors">
+            <button disabled={busy === 'dl'} onClick={async () => { setBusy('dl'); try { recordDownload({ title, fileUrl, fileSize }); await downloadPdf(fileUrl, title.replace(/\s+/g, '_') + '.pdf'); } catch {} finally { setBusy(null); }}} className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700 transition-colors">
               <Download className="w-3.5 h-3.5" />{busy === 'dl' ? 'Loading...' : 'Download'}
             </button>
           </div>

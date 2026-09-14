@@ -45,16 +45,6 @@ export async function fetchMockTests(categorySlug: string) {
   return data as { items: any[]; total: number };
 }
 
-export async function fetchUserBookmarks() {
-  const { data } = await apiClient.get('/student/bookmarks');
-  return data as { items: any[]; total: number };
-}
-
-export async function toggleBookmark(resource: string, id: string) {
-  const { data } = await apiClient.post('/student/bookmarks/toggle', { resource, resourceId: id });
-  return data;
-}
-
 export async function submitMcqAnswer(mcqId: string, answer: string) {
   const { data } = await apiClient.post('/student/progress/mcq-attempt', { mcqId, answer });
   return data;

@@ -11,7 +11,6 @@ import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import { DashboardPage } from '../pages/dashboard/DashboardPage';
 import StudentPreparationPage from '../pages/preparation/PreparationPage';
 import TopicPage from '../pages/preparation/TopicPage';
-import { BookmarksPage } from '../pages/bookmarks/BookmarksPage';
 import { MockTestPage } from '../pages/mock-tests/MockTestPage';
 import { MockTestsListPage } from '../pages/mock-tests/MockTestsListPage';
 import { MockTestsResultsPage } from '../pages/mock-tests/MockTestsResultsPage';
@@ -20,6 +19,7 @@ import { DailyChallengePage } from '../pages/daily-challenge/DailyChallengePage'
 import { LeaderboardPage } from '../pages/leaderboard/LeaderboardPage';
 import { ProfilePage } from '../pages/profile/ProfilePage';
 import { SettingsPage } from '../pages/settings/SettingsPage';
+import { DownloadsPage } from '../pages/downloads/DownloadsPage';
 import NotificationsListPage from '../pages/notifications/NotificationsListPage';
 import NotificationDetailPage from '../pages/notifications/NotificationDetailPage';
 import { SplashScreen } from '../components/common/SplashScreen';
@@ -54,7 +54,6 @@ function AppRouter() {
           <Route path="/notifications" element={<NotificationsListPage />} />
           <Route path="/notifications/:notificationId" element={<NotificationDetailPage />} />
           <Route path="/notifications/:id" element={<NotificationDetailPage />} />
-          <Route path="/bookmarks" element={<BookmarksPage />} />
           <Route path="/mock-tests" element={<MockTestsListPage />} />
           <Route path="/mock-tests/results" element={<MockTestsResultsPage />} />
           <Route path="/mock-tests/results/:resultId" element={<MockTestResultPage />} />
@@ -62,7 +61,9 @@ function AppRouter() {
           <Route path="/daily-challenge" element={<DailyChallengePage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/downloads" element={<DownloadsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/privacy" element={<SettingsPage defaultTab="privacy" />} />
         </Route>
         <Route path="*" element={<DefaultRoute />} />
       </Routes>

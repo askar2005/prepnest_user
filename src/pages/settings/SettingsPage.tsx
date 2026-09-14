@@ -1,19 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { apiClient } from '../../api/client';
 import { useToast } from '../../components/common/ToastHost';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { User, Lock, LogOut, Info, Settings as SettingsIcon } from 'lucide-react';
+import { User, Lock, LogOut, Info, ShieldCheck } from 'lucide-react';
+import { PrivacyPolicyTab } from './PrivacyPolicyTab';
 
-export function SettingsPage() {
+interface SettingsPageProps {
+  defaultTab?: string;
+}
+
+export function SettingsPage({ defaultTab }: SettingsPageProps) {
   const { user, logout } = useAuth();
   const { pushToast } = useToast();
-  const [tab, setTab] = useState('profile');
+  const [searchParams] = useSearchParams();
+  const paramTab = searchParams.get('tab');
+  const [tab, setTab] = useState(defaultTab || paramTab || 'profile');
   const [name, setName] = useState(user?.name || '');
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (defaultTab) setTab(defaultTab);
+    else if (paramTab) setTab(paramTab);
+  }, [defaultTab, paramTab]);
 
   const updateProfile = async () => {
     setBusy(true);
@@ -39,18 +52,28 @@ export function SettingsPage() {
   const tabs = [
     { key: 'profile', label: 'Profile', icon: User },
     { key: 'password', label: 'Password', icon: Lock },
+    { key: 'privacy', label: 'Privacy Policy', icon: ShieldCheck },
     { key: 'about', label: 'About', icon: Info },
   ];
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-4xl space-y-6">
       <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
 
       <div className="flex gap-2 pb-2 border-b border-slate-100 overflow-x-auto">
         {tabs.map((t) => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-colors whitespace-nowrap ${tab === t.key ? 'bg-brand-50 text-brand-600' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
-          ><t.icon className="w-4 h-4" />{t.label}</button>
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-colors whitespace-nowrap ${
+              tab === t.key
+                ? 'bg-brand-50 text-brand-600 font-semibold'
+                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <t.icon className="w-4 h-4" />
+            {t.label}
+          </button>
         ))}
       </div>
 
@@ -69,6 +92,8 @@ export function SettingsPage() {
           <Button onClick={changePassword} disabled={busy || newPassword.length < 6}>{busy ? 'Changing...' : 'Change Password'}</Button>
         </div>
       )}
+
+      {tab === 'privacy' && <PrivacyPolicyTab />}
 
       {tab === 'about' && (
         <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card space-y-3 text-sm text-slate-600 max-w-md">

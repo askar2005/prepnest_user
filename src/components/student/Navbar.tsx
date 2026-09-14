@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Bell, Bookmark, Menu, X, Home, BookOpen, Target, ClipboardList, Zap, TrendingUp, User, Settings } from 'lucide-react';
+import { Bell, Menu, X, Home, BookOpen, Target, ClipboardList, Zap, TrendingUp, User, Settings } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { SearchBar } from './SearchBar';
 import { AvatarMenu } from './AvatarMenu';
@@ -68,9 +68,6 @@ export function Navbar() {
                   {count > 99 ? '99+' : count}
                 </span>
               )}
-            </Link>
-            <Link to="/bookmarks" className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors hidden sm:block">
-              <Bookmark className="w-5 h-5" />
             </Link>
             <AvatarMenu />
           </div>

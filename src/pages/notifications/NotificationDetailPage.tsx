@@ -6,7 +6,7 @@ import { openPdf } from '../../lib/openPdf';
 import { Skeleton } from '../../components/student/Skeleton';
 import { cn } from '../../lib/cn';
 import { useToast } from '../../components/common/ToastHost';
-import { ArrowLeft, Calendar, Clock, Paperclip, ExternalLink, Share2, Bookmark, Bell, ChevronRight, Megaphone } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Paperclip, ExternalLink, Share2, Bell, ChevronRight, Megaphone } from 'lucide-react';
 
 const CATEGORY_LABELS: Record<string, string> = {
   PLACEMENT_DRIVES: 'Placement', INTERNSHIPS: 'Internships', HACKATHONS: 'Hackathons',

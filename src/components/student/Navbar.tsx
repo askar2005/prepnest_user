@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Bell, Menu, X, Home, BookOpen, Target, ClipboardList, Zap, TrendingUp, User, Settings } from 'lucide-react';
+import { Bell, Menu, X, Home, BookOpen, Target, ClipboardList, Zap, TrendingUp, User, Settings, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { SearchBar } from './SearchBar';
 import { AvatarMenu } from './AvatarMenu';
@@ -17,6 +17,7 @@ const navItems = [
   { to: '/daily-challenge', label: 'Daily Challenge', icon: Zap },
   { to: '/leaderboard', label: 'Leaderboard', icon: TrendingUp },
   { to: '/notifications', label: 'Notifications', icon: Bell },
+  { to: '/privacy', label: 'Privacy Policy', icon: ShieldCheck },
   { to: '/profile', label: 'Profile', icon: User },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];

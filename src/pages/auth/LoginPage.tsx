@@ -42,9 +42,17 @@ export function LoginPage() {
       const status = err?.response?.status;
       const serverMsg = err?.response?.data?.message;
       if (status === 401) {
-        pushToast('Invalid email or password. Double-check for a typo or trailing space.', 'error');
+        pushToast('Invalid email or password. Double-check for a typo.', 'error');
+      } else if (status === 403) {
+        pushToast(serverMsg || 'Please verify your account before logging in.', 'error');
+      } else if (status === 404) {
+        pushToast('Service endpoint not found. Please contact support.', 'error');
+      } else if (status >= 500) {
+        pushToast('Server is temporarily unavailable. Please try again later.', 'error');
+      } else if (!err?.response || err?.code === 'ERR_NETWORK') {
+        pushToast('Unable to connect. Please check your internet connection.', 'error');
       } else {
-        pushToast(serverMsg || 'Login failed', 'error');
+        pushToast(serverMsg || 'Login failed. Please try again.', 'error');
       }
     } finally {
       setBusy(false);

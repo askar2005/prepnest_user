@@ -1,14 +1,8 @@
 import axios from 'axios';
 
-const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-const isLocalDev = hostname === 'localhost' || hostname === '127.0.0.1';
 const productionApiUrl = 'https://prednest-backend-e45z.onrender.com/api';
-const devFallback = 'http://localhost:4000/api';
-const fallback = isLocalDev ? devFallback : productionApiUrl;
 
-const raw = isLocalDev
-  ? (import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.includes('onrender.com') ? import.meta.env.VITE_API_URL : devFallback)
-  : (import.meta.env.VITE_API_URL || productionApiUrl);
+const raw = import.meta.env.VITE_API_URL || productionApiUrl;
 // Safety net: ensure base URL always ends with /api
 const base = raw.replace(/\/+$/, '');
 const finalBaseURL = base.endsWith('/api') ? base : `${base}/api`;

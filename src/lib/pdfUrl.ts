@@ -1,18 +1,10 @@
 /**
  * PDF URL helpers.
  *
- * VIEW: previews always open in the browser's NATIVE PDF viewer in a new tab
- * (no modal, no iframe, no blob, no custom renderer). Extension-less Cloudinary
- * raw files (e.g. `raw/upload/v.../file_gngxdq`) are served with
- * `Content-Disposition: attachment` + `application/octet-stream`, which would
- * force a download even in a new tab. Cloudinary has no "inline" flag, so such
- * URLs are routed through the backend inline-proxy endpoint
- * (`/api/files/preview?url=...`) which re-serves the bytes as
- * `application/pdf` with an `inline` disposition — the browser then renders it
- * natively.
- *
- * DOWNLOAD: downloads deterministically force attachment by injecting
- * `fl_attachment` into the Cloudinary delivery URL. View never uses it.
+ * VIEW: previews open in the browser's native viewer or in-app PDF viewer modal.
+ * Relative URLs are converted to valid absolute HTTPS URLs.
+ * Extension-less Cloudinary raw files are routed through the backend inline-proxy
+ * endpoint (`/api/files/preview?url=...`) which re-serves bytes as application/pdf inline.
  */
 
 function isCloudinaryUrl(url: string): boolean {
@@ -24,35 +16,44 @@ function hasPdfExtension(url: string): boolean {
   return /\.pdf(?:[?#]|$)/i.test(url);
 }
 
-/**
- * Resolves a stored file URL into a URL the browser's native PDF viewer will
- * render inline in a new tab:
- *
- * - Cloudinary URLs ending in `.pdf` are served `application/pdf` with no
- *   Content-Disposition → usable directly.
- * - Extension-less Cloudinary raw URLs and data: PDF URLs → backend
- *   inline-proxy URL (browsers also block top-level data: navigation).
- * - Anything else → returned unchanged.
- */
-export function getInlinePreviewUrl(url: string | null | undefined, backendOrigin: string): string | null {
-  if (!url) return null;
-  if (isCloudinaryUrl(url) && hasPdfExtension(url)) return url;
-  if (url.startsWith('data:application/pdf')) {
-    return `${backendOrigin}/api/files/preview?url=${encodeURIComponent(url)}`;
+/** Converts any relative URL or localhost URL to a valid absolute HTTPS URL. */
+export function toAbsoluteUrl(url: string | null | undefined, backendOrigin: string): string {
+  if (!url) return '';
+  let full = url.trim();
+
+  if (full.startsWith('/')) {
+    full = `${backendOrigin}${full}`;
+  } else if (full.startsWith('http://localhost:4000') || full.startsWith('http://127.0.0.1:4000')) {
+    full = full.replace(/^http:\/\/(localhost|127\.0\.0\.1):4000/, backendOrigin);
   }
-  if (isCloudinaryUrl(url)) {
-    return `${backendOrigin}/api/files/preview?url=${encodeURIComponent(url)}`;
+
+  // Ensure production backend or Cloudinary HTTP URLs use HTTPS
+  if (full.startsWith('http://') && (full.includes('onrender.com') || full.includes('cloudinary.com'))) {
+    full = full.replace(/^http:/, 'https:');
   }
-  return url;
+
+  return full;
 }
 
 /**
- * Returns a URL that deterministically forces a download:
- *
- * - Cloudinary URLs get `fl_attachment` injected (verified: returns
- *   `Content-Disposition: attachment` for both raw and image resources).
- * - data: URLs and everything else are returned unchanged (the blob download
- *   helper handles those).
+ * Resolves a stored file URL into a valid inline preview URL.
+ */
+export function getInlinePreviewUrl(url: string | null | undefined, backendOrigin: string): string | null {
+  if (!url) return null;
+  const absUrl = toAbsoluteUrl(url, backendOrigin);
+
+  if (isCloudinaryUrl(absUrl) && hasPdfExtension(absUrl)) return absUrl;
+  if (absUrl.startsWith('data:application/pdf')) {
+    return `${backendOrigin}/api/files/preview?url=${encodeURIComponent(absUrl)}`;
+  }
+  if (isCloudinaryUrl(absUrl)) {
+    return `${backendOrigin}/api/files/preview?url=${encodeURIComponent(absUrl)}`;
+  }
+  return absUrl;
+}
+
+/**
+ * Returns a URL that deterministically forces a download.
  */
 export function getDownloadUrl(url: string | null | undefined): string | null {
   if (!url) return null;

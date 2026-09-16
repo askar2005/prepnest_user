@@ -2,10 +2,13 @@
  * Open a PDF document in Capacitor Android using Chrome Custom Tabs (@capacitor/browser)
  * or in-app preview modal (Web).
  *
- * Safe & Crash-Proof: Never passes file:// URIs to Browser.open() on Android.
+ * Real Resource URL Handling:
+ * - Direct Cloudinary & public HTTPS URLs open via Google Docs Viewer / Browser.
+ * - Protected backend proxy URLs fetch bytes using apiClient (passing JWT Bearer token)
+ *   and display inside in-app preview modal without opening unauthorized JSON responses.
  */
 import { getInlinePreviewUrl, toAbsoluteUrl } from './pdfUrl';
-import { BACKEND_ORIGIN } from '../api/client';
+import { BACKEND_ORIGIN, apiClient } from '../api/client';
 import { downloadPdf } from './downloadPdf';
 import { Browser } from '@capacitor/browser';
 import { showGlobalToast } from '../components/common/ToastHost';
@@ -16,7 +19,7 @@ function isCapacitorNative(): boolean {
   return !!(cap && typeof cap.isNativePlatform === 'function' && cap.isNativePlatform());
 }
 
-function renderInAppModal(previewSrc: string, originalUrl: string) {
+function renderInAppModal(previewSrc: string, originalUrl: string, blobObjectUrl?: string) {
   try {
     const existing = document.getElementById('prepnest-pdf-modal');
     if (existing) existing.remove();
@@ -50,7 +53,14 @@ function renderInAppModal(previewSrc: string, originalUrl: string) {
 
     document.body.appendChild(modal);
 
-    document.getElementById('pdf-modal-close-btn')?.addEventListener('click', () => modal.remove());
+    const cleanup = () => {
+      modal.remove();
+      if (blobObjectUrl) {
+        window.setTimeout(() => URL.revokeObjectURL(blobObjectUrl), 5000);
+      }
+    };
+
+    document.getElementById('pdf-modal-close-btn')?.addEventListener('click', cleanup);
     document.getElementById('pdf-modal-download-btn')?.addEventListener('click', () => {
       downloadPdf(originalUrl);
     });
@@ -68,39 +78,53 @@ export async function openPdf(url: string | null | undefined): Promise<void> {
   const absOriginal = toAbsoluteUrl(url, BACKEND_ORIGIN);
   const target = getInlinePreviewUrl(url, BACKEND_ORIGIN) ?? absOriginal;
 
-  // 1. Capacitor Android Native Flow (Chrome Custom Tabs with pure HTTPS URLs)
+  // Case A: Protected Backend Proxy Endpoint requiring Bearer JWT Token
+  if (target.includes('/api/files/')) {
+    try {
+      showGlobalToast('Loading PDF document...', 'info');
+      const res = await apiClient.get(target, { responseType: 'blob' });
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const objectUrl = URL.createObjectURL(blob);
+      renderInAppModal(objectUrl, absOriginal, objectUrl);
+      return;
+    } catch (err: any) {
+      console.error('[PDF Open] Protected proxy fetch failed:', err);
+      showGlobalToast('Unable to load protected PDF file.', 'error');
+      return;
+    }
+  }
+
+  // Case B: Direct Public HTTPS URL (Cloudinary or Direct Link)
+  const isCloudinary = target.includes('res.cloudinary.com');
+  const googleDocsViewerUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(target)}`;
+
+  // 1. Capacitor Android Native Flow
   if (isCapacitorNative()) {
     try {
-      let openUrl: string;
-
-      if (target.startsWith('http://') || target.startsWith('https://')) {
-        if (target.includes('cloudinary.com') || target.toLowerCase().includes('.pdf')) {
-          openUrl = target;
-        } else {
-          openUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(target)}`;
-        }
-      } else {
-        const fullHttps = target.startsWith('/') ? `${BACKEND_ORIGIN}${target}` : `${BACKEND_ORIGIN}/${target}`;
-        openUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(fullHttps)}`;
-      }
+      // Use Google Docs Viewer for Cloudinary raw files or extension-less URLs
+      const openUrl = (isCloudinary && !target.toLowerCase().endsWith('.pdf'))
+        ? googleDocsViewerUrl
+        : target;
 
       await Browser.open({ url: openUrl });
       return;
     } catch (err) {
       console.error('[PDF Open] Browser.open failed:', err);
-      // Fallback cleanly to in-app modal instead of crashing
-      renderInAppModal(target, absOriginal);
+      renderInAppModal(googleDocsViewerUrl, absOriginal);
       return;
     }
   }
 
   // 2. Web Browser Flow
   try {
-    const win = window.open(target, '_blank', 'noopener,noreferrer');
+    const openUrl = (isCloudinary && !target.toLowerCase().endsWith('.pdf'))
+      ? googleDocsViewerUrl
+      : target;
+    const win = window.open(openUrl, '_blank', 'noopener,noreferrer');
     if (!win) {
-      renderInAppModal(target, absOriginal);
+      renderInAppModal(openUrl, absOriginal);
     }
   } catch {
-    renderInAppModal(target, absOriginal);
+    renderInAppModal(googleDocsViewerUrl, absOriginal);
   }
 }

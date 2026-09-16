@@ -1,6 +1,6 @@
 /**
  * Force-download a PDF document as a blob (Web) or save to Documents folder (Capacitor Android).
- * Safe & Crash-Proof: Never passes file:// URIs to Browser.open() on Android.
+ * Safe & Crash-Proof: Validates PDF bytes and handles authenticated endpoints cleanly.
  */
 import { getDownloadUrl, toAbsoluteUrl } from './pdfUrl';
 import { BACKEND_ORIGIN, apiClient } from '../api/client';
@@ -58,7 +58,7 @@ export async function downloadPdf(url: string | null | undefined, fileName = 'do
 
       // Fetch arraybuffer
       let arrayBuffer: ArrayBuffer;
-      if (target.startsWith(BACKEND_ORIGIN) || target.startsWith('/')) {
+      if (target.includes('/api/') || target.startsWith(BACKEND_ORIGIN)) {
         const res = await apiClient.get(target, { responseType: 'arraybuffer' });
         arrayBuffer = res.data;
       } else {
@@ -93,7 +93,7 @@ export async function downloadPdf(url: string | null | undefined, fileName = 'do
   // 2. Web Browser Flow (Desktop / Mobile Web)
   try {
     let blob: Blob;
-    if (target.startsWith(BACKEND_ORIGIN) || target.startsWith('/')) {
+    if (target.includes('/api/') || target.startsWith(BACKEND_ORIGIN)) {
       const res = await apiClient.get(target, { responseType: 'blob' });
       blob = new Blob([res.data], { type: 'application/pdf' });
     } else {

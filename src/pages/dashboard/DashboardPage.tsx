@@ -8,6 +8,7 @@ import { FilterChips } from '../../components/student/FilterChip';
 import { StreakCard, WeeklyGoalCard } from '../../components/student/ProgressCard';
 import { CardSkeleton } from '../../components/student/Skeleton';
 import { HeroBanner } from '../../components/student/HeroBanner';
+import { AdBanner } from '../../components/AdBanner';
 import { Zap, TrendingUp, Bell, ChevronRight, Megaphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -75,6 +76,9 @@ export function DashboardPage() {
           <WeeklyGoalCard progress={progress?.weeklyProgress || 0} target={10} />
         </div>
       </div>
+
+      {/* AdMob Banner */}
+      <AdBanner />
 
       {/* Daily Challenge Snippet */}
       {todayChallenge?.challenge && !todayChallenge?.attempt && (

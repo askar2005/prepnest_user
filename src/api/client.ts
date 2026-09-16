@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const productionApiUrl = 'https://prednest-backend-e45z.onrender.com/api';
+const productionApiUrl = 'https://prepnest-backend-e45z.onrender.com/api';
 
 const raw = import.meta.env.VITE_API_URL || productionApiUrl;
 // Safety net: ensure base URL always ends with /api

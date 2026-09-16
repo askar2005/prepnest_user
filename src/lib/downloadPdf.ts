@@ -1,6 +1,7 @@
 /**
  * Force-download a PDF document as a blob (Web) or save to Documents folder (Capacitor Android).
- * Safe & Crash-Proof: Validates PDF bytes and handles authenticated endpoints cleanly.
+ * Safe & Crash-Proof: Validates PDF bytes (%PDF header) and handles authenticated endpoints cleanly.
+ * Zero dependency on Google Docs Viewer / docs.google.com.
  */
 import { getDownloadUrl, toAbsoluteUrl } from './pdfUrl';
 import { BACKEND_ORIGIN, apiClient } from '../api/client';
@@ -12,6 +13,12 @@ function isCapacitorNative(): boolean {
   if (typeof window === 'undefined') return false;
   const cap = (window as any).Capacitor;
   return !!(cap && typeof cap.isNativePlatform === 'function' && cap.isNativePlatform());
+}
+
+function isPdfMagicBytes(buffer: ArrayBuffer): boolean {
+  if (!buffer || buffer.byteLength < 4) return false;
+  const bytes = new Uint8Array(buffer.slice(0, 4));
+  return bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46;
 }
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -51,29 +58,35 @@ export async function downloadPdf(url: string | null | undefined, fileName = 'do
     /* ignore history logging error */
   }
 
-  // 1. Capacitor Android Native Flow
-  if (isCapacitorNative()) {
-    try {
-      showGlobalToast(`Downloading ${safeName}...`, 'info');
+  try {
+    showGlobalToast(`Downloading ${safeName}...`, 'info');
 
-      // Fetch arraybuffer
-      let arrayBuffer: ArrayBuffer;
-      if (target.includes('/api/') || target.startsWith(BACKEND_ORIGIN)) {
-        const res = await apiClient.get(target, { responseType: 'arraybuffer' });
-        arrayBuffer = res.data;
-      } else {
-        const res = await fetch(target);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        arrayBuffer = await res.arrayBuffer();
-      }
+    // Fetch arraybuffer
+    let arrayBuffer: ArrayBuffer;
+    if (target.includes('/api/') || target.startsWith(BACKEND_ORIGIN)) {
+      const res = await apiClient.get(target, { responseType: 'arraybuffer' });
+      arrayBuffer = res.data;
+    } else {
+      const res = await fetch(target);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      arrayBuffer = await res.arrayBuffer();
+    }
 
-      if (!arrayBuffer || arrayBuffer.byteLength === 0) {
-        throw new Error('Received empty file payload');
-      }
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+      throw new Error('Received empty file payload');
+    }
 
+    // Validate PDF magic bytes (%PDF)
+    if (!isPdfMagicBytes(arrayBuffer)) {
+      console.warn('[PDF Download] Response is not a valid PDF file');
+      showGlobalToast('Unable to download: File is not a valid PDF document.', 'error');
+      return;
+    }
+
+    // 1. Capacitor Android Native Storage Flow
+    if (isCapacitorNative()) {
       const base64Data = arrayBufferToBase64(arrayBuffer);
 
-      // Write to Android Documents directory
       await Filesystem.writeFile({
         path: safeName,
         data: base64Data,
@@ -83,25 +96,10 @@ export async function downloadPdf(url: string | null | undefined, fileName = 'do
 
       showGlobalToast(`Downloaded to Documents: ${safeName}`, 'success');
       return;
-    } catch (err: any) {
-      console.error('[PDF Download] Native download failed:', err);
-      showGlobalToast('Download failed. Please check your network connection.', 'error');
-      return;
-    }
-  }
-
-  // 2. Web Browser Flow (Desktop / Mobile Web)
-  try {
-    let blob: Blob;
-    if (target.includes('/api/') || target.startsWith(BACKEND_ORIGIN)) {
-      const res = await apiClient.get(target, { responseType: 'blob' });
-      blob = new Blob([res.data], { type: 'application/pdf' });
-    } else {
-      const response = await fetch(target, { credentials: 'omit' });
-      if (!response.ok) throw new Error(`Failed to fetch file (${response.status})`);
-      blob = await response.blob();
     }
 
+    // 2. Web Browser Flow (Desktop / Mobile Web)
+    const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
     const objectUrl = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = objectUrl;
@@ -112,9 +110,9 @@ export async function downloadPdf(url: string | null | undefined, fileName = 'do
     anchor.remove();
 
     window.setTimeout(() => URL.revokeObjectURL(objectUrl), 3000);
-    showGlobalToast(`Downloading ${safeName}...`, 'success');
+    showGlobalToast(`Downloaded ${safeName}`, 'success');
   } catch (err: any) {
-    console.error('[PDF Download] Web download failed:', err);
+    console.error('[PDF Download] Download failed:', err);
     showGlobalToast('Download failed. Please check your network connection.', 'error');
   }
 }

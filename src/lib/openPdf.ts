@@ -1,25 +1,25 @@
 /**
- * Open a PDF document in Capacitor Android using Chrome Custom Tabs (@capacitor/browser)
- * or in-app preview modal (Web).
+ * Open a PDF document in Kathir Academy using an in-app PDF preview modal.
  *
- * Real Resource URL Handling:
- * - Direct Cloudinary & public HTTPS URLs open via Google Docs Viewer / Browser.
- * - Protected backend proxy URLs fetch bytes using apiClient (passing JWT Bearer token)
- *   and display inside in-app preview modal without opening unauthorized JSON responses.
+ * Safe, Crash-Proof & Completely Free of Google Docs Viewer / docs.google.com:
+ * - Fetches actual PDF bytes (passing JWT Bearer token if required).
+ * - Validates PDF magic bytes (%PDF).
+ * - Renders PDF inside an in-app viewer modal using Blob ObjectURLs.
+ * - Supports clean Android Back button navigation.
  */
-import { getInlinePreviewUrl, toAbsoluteUrl } from './pdfUrl';
+import { toAbsoluteUrl } from './pdfUrl';
 import { BACKEND_ORIGIN, apiClient } from '../api/client';
 import { downloadPdf } from './downloadPdf';
-import { Browser } from '@capacitor/browser';
 import { showGlobalToast } from '../components/common/ToastHost';
 
-function isCapacitorNative(): boolean {
-  if (typeof window === 'undefined') return false;
-  const cap = (window as any).Capacitor;
-  return !!(cap && typeof cap.isNativePlatform === 'function' && cap.isNativePlatform());
+/** Checks if ArrayBuffer begins with %PDF magic bytes (0x25, 0x50, 0x44, 0x46) */
+function isPdfMagicBytes(buffer: ArrayBuffer): boolean {
+  if (!buffer || buffer.byteLength < 4) return false;
+  const bytes = new Uint8Array(buffer.slice(0, 4));
+  return bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46;
 }
 
-function renderInAppModal(previewSrc: string, originalUrl: string, blobObjectUrl?: string) {
+function renderInAppPdfModal(blobObjectUrl: string, originalUrl: string, documentTitle = 'PDF Document') {
   try {
     const existing = document.getElementById('prepnest-pdf-modal');
     if (existing) existing.remove();
@@ -29,15 +29,15 @@ function renderInAppModal(previewSrc: string, originalUrl: string, blobObjectUrl
     modal.className = 'fixed inset-0 z-[9999] bg-slate-950/95 backdrop-blur-md flex flex-col w-full h-full text-white font-sans animate-fade-in';
 
     modal.innerHTML = `
-      <div class="flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-slate-800 shrink-0">
+      <div class="flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-slate-800 shrink-0 select-none">
         <div class="flex items-center gap-2.5 overflow-hidden pr-2">
           <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
           </svg>
-          <span class="text-sm font-semibold truncate text-slate-100">PDF Document</span>
+          <span class="text-sm font-semibold truncate text-slate-100">${documentTitle}</span>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-          <button id="pdf-modal-download-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95">
+          <button id="pdf-modal-download-btn" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 shadow-md">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
             Download
           </button>
@@ -47,84 +47,106 @@ function renderInAppModal(previewSrc: string, originalUrl: string, blobObjectUrl
         </div>
       </div>
       <div class="flex-1 w-full h-full bg-slate-900 relative overflow-hidden flex items-center justify-center">
-        <iframe src="${previewSrc}" class="w-full h-full border-0 bg-white" title="PDF Document Viewer"></iframe>
+        <object data="${blobObjectUrl}" type="application/pdf" class="w-full h-full border-0 bg-white">
+          <embed src="${blobObjectUrl}" type="application/pdf" class="w-full h-full border-0 bg-white" />
+          <div class="p-6 text-center text-slate-300 max-w-sm">
+            <p class="mb-4 text-sm font-medium">Preview is unavailable directly on this viewer.</p>
+            <button id="pdf-modal-fallback-download" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow">
+              Download PDF File
+            </button>
+          </div>
+        </object>
       </div>
     `;
 
     document.body.appendChild(modal);
 
+    let isCleanedUp = false;
     const cleanup = () => {
+      if (isCleanedUp) return;
+      isCleanedUp = true;
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('keydown', handleKeyDown);
       modal.remove();
-      if (blobObjectUrl) {
-        window.setTimeout(() => URL.revokeObjectURL(blobObjectUrl), 5000);
-      }
+      window.setTimeout(() => URL.revokeObjectURL(blobObjectUrl), 3000);
     };
 
-    document.getElementById('pdf-modal-close-btn')?.addEventListener('click', cleanup);
-    document.getElementById('pdf-modal-download-btn')?.addEventListener('click', () => {
-      downloadPdf(originalUrl);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') cleanup();
+    };
+
+    const handlePopState = () => {
+      cleanup();
+    };
+
+    // Push temporary state so physical Android Back button closes modal smoothly
+    try {
+      window.history.pushState({ pdfModal: true }, '');
+      window.addEventListener('popstate', handlePopState);
+    } catch {
+      /* ignore history error */
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    document.getElementById('pdf-modal-close-btn')?.addEventListener('click', () => {
+      if (window.history.state?.pdfModal) {
+        window.history.back();
+      } else {
+        cleanup();
+      }
     });
-  } catch {
-    showGlobalToast('Unable to open PDF preview modal.', 'error');
+
+    const triggerDownload = () => downloadPdf(originalUrl, `${documentTitle}.pdf`);
+    document.getElementById('pdf-modal-download-btn')?.addEventListener('click', triggerDownload);
+    document.getElementById('pdf-modal-fallback-download')?.addEventListener('click', triggerDownload);
+  } catch (err) {
+    console.error('[PDF Modal Error]', err);
+    showGlobalToast('Unable to display PDF preview.', 'error');
   }
 }
 
-export async function openPdf(url: string | null | undefined): Promise<void> {
+export async function openPdf(url: string | null | undefined, title = 'PDF Document'): Promise<void> {
   if (!url || typeof url !== 'string' || !url.trim()) {
     showGlobalToast('PDF document URL is missing.', 'error');
     return;
   }
 
-  const absOriginal = toAbsoluteUrl(url, BACKEND_ORIGIN);
-  const target = getInlinePreviewUrl(url, BACKEND_ORIGIN) ?? absOriginal;
+  const absUrl = toAbsoluteUrl(url, BACKEND_ORIGIN);
 
-  // Case A: Protected Backend Proxy Endpoint requiring Bearer JWT Token
-  if (target.includes('/api/files/')) {
-    try {
-      showGlobalToast('Loading PDF document...', 'info');
-      const res = await apiClient.get(target, { responseType: 'blob' });
-      const blob = new Blob([res.data], { type: 'application/pdf' });
-      const objectUrl = URL.createObjectURL(blob);
-      renderInAppModal(objectUrl, absOriginal, objectUrl);
-      return;
-    } catch (err: any) {
-      console.error('[PDF Open] Protected proxy fetch failed:', err);
-      showGlobalToast('Unable to load protected PDF file.', 'error');
-      return;
-    }
-  }
-
-  // Case B: Direct Public HTTPS URL (Cloudinary or Direct Link)
-  const isCloudinary = target.includes('res.cloudinary.com');
-  const googleDocsViewerUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(target)}`;
-
-  // 1. Capacitor Android Native Flow
-  if (isCapacitorNative()) {
-    try {
-      // Use Google Docs Viewer for Cloudinary raw files or extension-less URLs
-      const openUrl = (isCloudinary && !target.toLowerCase().endsWith('.pdf'))
-        ? googleDocsViewerUrl
-        : target;
-
-      await Browser.open({ url: openUrl });
-      return;
-    } catch (err) {
-      console.error('[PDF Open] Browser.open failed:', err);
-      renderInAppModal(googleDocsViewerUrl, absOriginal);
-      return;
-    }
-  }
-
-  // 2. Web Browser Flow
   try {
-    const openUrl = (isCloudinary && !target.toLowerCase().endsWith('.pdf'))
-      ? googleDocsViewerUrl
-      : target;
-    const win = window.open(openUrl, '_blank', 'noopener,noreferrer');
-    if (!win) {
-      renderInAppModal(openUrl, absOriginal);
+    showGlobalToast('Loading PDF document...', 'info');
+
+    let arrayBuffer: ArrayBuffer;
+
+    // Authenticated backend API URL
+    if (absUrl.includes('/api/') || absUrl.startsWith(BACKEND_ORIGIN)) {
+      const res = await apiClient.get(absUrl, { responseType: 'arraybuffer' });
+      arrayBuffer = res.data;
+    } else {
+      // Direct Cloudinary or HTTPS URL
+      const res = await fetch(absUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      arrayBuffer = await res.arrayBuffer();
     }
-  } catch {
-    renderInAppModal(googleDocsViewerUrl, absOriginal);
+
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+      throw new Error('Received empty PDF payload');
+    }
+
+    // Validate PDF magic bytes (%PDF)
+    if (!isPdfMagicBytes(arrayBuffer)) {
+      console.warn('[PDF Open] Response is not a valid PDF document (missing %PDF header)');
+      showGlobalToast('The selected file is not a valid PDF document.', 'error');
+      return;
+    }
+
+    const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+    const objectUrl = URL.createObjectURL(blob);
+
+    renderInAppPdfModal(objectUrl, absUrl, title);
+  } catch (err: any) {
+    console.error('[PDF Open] Failed to load PDF:', err);
+    showGlobalToast('Unable to load PDF document. Please check your connection.', 'error');
   }
 }

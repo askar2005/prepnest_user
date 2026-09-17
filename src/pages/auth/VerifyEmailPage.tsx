@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { apiClient } from '../../api/client';
 import { Button } from '../../components/ui/Button';
@@ -21,8 +21,8 @@ export function VerifyEmailPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      await apiClient.post('/auth/verify-email', { email, otp });
-      pushToast('Email verified! You can now sign in.', 'success');
+      const { data } = await apiClient.post('/auth/verify-email', { email, otp });
+      pushToast(data?.message || 'Email verified! You can now sign in.', 'success');
       navigate('/login');
     } catch (err: any) {
       pushToast(err?.response?.data?.message || 'Verification failed', 'error');
@@ -38,6 +38,9 @@ export function VerifyEmailPage() {
           <Input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter OTP" required maxLength={6} />
           <Button type="submit" disabled={busy} className="w-full">{busy ? 'Verifying...' : 'Verify'}</Button>
         </form>
+        <p className="mt-4 text-center text-xs text-slate-500">
+          Already verified or created account? <Link to="/login" className="text-brand-600 hover:underline font-semibold">Sign in directly</Link>
+        </p>
       </div>
     </div>
   );

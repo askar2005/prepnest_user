@@ -43,7 +43,7 @@ export function DeleteAccountPage() {
 
     setLoggedInDeleting(true);
     try {
-      await apiClient.delete('/user/delete-account');
+      await apiClient.delete('/user/delete-account', { data: {} });
       pushToast('Your account and associated data have been removed.', 'success');
       // Clear session/JWT and auth state
       window.localStorage.removeItem('prepnest_token');

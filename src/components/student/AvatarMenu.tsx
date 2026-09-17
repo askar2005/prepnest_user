@@ -49,10 +49,10 @@ export function AvatarMenu() {
             ))}
             <div className="border-t border-slate-100 pt-1 mt-1 space-y-0.5">
               <button
-                onClick={() => { setOpen(false); setShowDeleteModal(true); }}
-                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium"
+                onClick={() => { setOpen(false); navigate('/delete-account'); }}
+                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-semibold"
               >
-                <Trash2 className="w-4 h-4 text-red-500" /> Delete Account
+                <Trash2 className="w-4 h-4 text-red-600" /> Delete Account
               </button>
               <button onClick={() => { setOpen(false); logout(); }} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
                 <LogOut className="w-4 h-4 text-slate-400" /> Logout
@@ -61,11 +61,6 @@ export function AvatarMenu() {
           </div>
         )}
       </div>
-
-      <DeleteAccountModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-      />
     </>
   );
 }

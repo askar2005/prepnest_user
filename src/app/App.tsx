@@ -9,6 +9,7 @@ import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
 import { VerifyResetOtpPage } from '../pages/auth/VerifyResetOtpPage';
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import { DeleteAccountPage } from '../pages/delete-account/DeleteAccountPage';
+import { AccountDeletedPage } from '../pages/delete-account/AccountDeletedPage';
 import { DashboardPage } from '../pages/dashboard/DashboardPage';
 import StudentPreparationPage from '../pages/preparation/PreparationPage';
 import TopicPage from '../pages/preparation/TopicPage';
@@ -49,6 +50,7 @@ function AppRouter() {
         <Route path="/verify-reset-otp" element={<PublicOnly><VerifyResetOtpPage /></PublicOnly>} />
         <Route path="/reset-password" element={<PublicOnly><ResetPasswordPage /></PublicOnly>} />
         <Route path="/delete-account" element={<DeleteAccountPage />} />
+        <Route path="/account-deleted" element={<AccountDeletedPage />} />
         <Route element={<ProtectedOnly><AppLayout /></ProtectedOnly>}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/preparation/:category" element={<StudentPreparationPage />} />

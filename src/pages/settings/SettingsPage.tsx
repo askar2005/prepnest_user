@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { apiClient } from '../../api/client';
 import { useToast } from '../../components/common/ToastHost';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { User, Lock, LogOut, Info, ShieldCheck } from 'lucide-react';
+import { User, Lock, LogOut, Info, ShieldCheck, Trash2 } from 'lucide-react';
 import { PrivacyPolicyTab } from './PrivacyPolicyTab';
 
 interface SettingsPageProps {
@@ -54,6 +54,7 @@ export function SettingsPage({ defaultTab }: SettingsPageProps) {
     { key: 'password', label: 'Password', icon: Lock },
     { key: 'privacy', label: 'Privacy Policy', icon: ShieldCheck },
     { key: 'about', label: 'About', icon: Info },
+    { key: 'delete', label: 'Delete Account', icon: Trash2 },
   ];
 
   return (
@@ -67,11 +68,11 @@ export function SettingsPage({ defaultTab }: SettingsPageProps) {
             onClick={() => setTab(t.key)}
             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-colors whitespace-nowrap ${
               tab === t.key
-                ? 'bg-brand-50 text-brand-600 font-semibold'
+                ? t.key === 'delete' ? 'bg-red-50 text-red-600 font-semibold' : 'bg-brand-50 text-brand-600 font-semibold'
                 : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
             }`}
           >
-            <t.icon className="w-4 h-4" />
+            <t.icon className={`w-4 h-4 ${t.key === 'delete' ? 'text-red-500' : ''}`} />
             {t.label}
           </button>
         ))}
@@ -108,6 +109,26 @@ export function SettingsPage({ defaultTab }: SettingsPageProps) {
           </button>
         </div>
       )}
+
+      {tab === 'delete' && (
+        <div className="rounded-2xl border border-red-100 bg-white p-6 shadow-card space-y-4 max-w-md">
+          <div className="space-y-2">
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 text-red-600">
+              <Trash2 className="w-5 h-5" /> Permanent Account Deletion
+            </h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Deleting your account will permanently erase your profile, progress metrics, test results, bookmarks, and account data.
+            </p>
+          </div>
+          <Link
+            to="/delete-account"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-all shadow-xs"
+          >
+            <Trash2 className="w-4 h-4" /> Go to Account Deletion Page
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
+

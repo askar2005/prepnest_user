@@ -333,7 +333,7 @@ export function DeleteAccountPage() {
             <HelpCircle className="w-4 h-4 text-slate-400" /> Need assistance with your account deletion?
           </p>
           <p>
-            Contact support at <a href="mailto:support@kathiracademy.in" className="text-brand-600 underline font-medium">support@kathiracademy.in</a>
+            Contact support at <a href="mailto:academykathir@gmail.com" className="text-brand-600 underline font-medium">academykathir@gmail.com</a>
           </p>
         </div>
       </main>

@@ -25,9 +25,14 @@ export function SignupPage() {
     if (password.length < 8) { pushToast('Password must be at least 8 characters', 'error'); return; }
     setBusy(true);
     try {
-      await apiClient.post('/auth/signup', { fullName: fullName.trim(), email: cleanEmail, password });
-      pushToast('Check your email for the OTP', 'success');
-      navigate(`/verify-email?email=${encodeURIComponent(cleanEmail)}`);
+      const { data } = await apiClient.post('/auth/signup', { fullName: fullName.trim(), email: cleanEmail, password });
+      if (data?.otp) {
+        pushToast(`Account created! Your OTP code is ${data.otp}`, 'success');
+        navigate(`/verify-email?email=${encodeURIComponent(cleanEmail)}&otp=${data.otp}`);
+      } else {
+        pushToast('Check your email for the OTP', 'success');
+        navigate(`/verify-email?email=${encodeURIComponent(cleanEmail)}`);
+      }
     } catch (err: any) {
       pushToast(err?.response?.data?.message || 'Signup failed', 'error');
     } finally { setBusy(false); }

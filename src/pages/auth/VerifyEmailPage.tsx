@@ -12,7 +12,8 @@ export function VerifyEmailPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const email = searchParams.get('email') || '';
-  const [otp, setOtp] = useState('');
+  const initialOtp = searchParams.get('otp') || '';
+  const [otp, setOtp] = useState(initialOtp);
   const [busy, setBusy] = useState(false);
 
   if (user) return <Navigate to="/" replace />;

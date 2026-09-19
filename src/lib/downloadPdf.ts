@@ -1,13 +1,24 @@
 /**
- * Force-download a PDF document as a blob (Web) or save to Documents folder (Capacitor Android).
- * Safe & Crash-Proof: Validates PDF bytes (%PDF header) and handles authenticated endpoints cleanly.
+ * Force-download a PDF document as a blob (Web) or save to public Downloads/Kathir Academy folder (Capacitor Android).
+ * Safe & Crash-Proof: Validates PDF bytes (%PDF header), handles authenticated endpoints cleanly, and NEVER shows false success.
  * Zero dependency on Google Docs Viewer / docs.google.com.
  */
 import { getDownloadUrl, toAbsoluteUrl } from './pdfUrl';
 import { BACKEND_ORIGIN, apiClient } from '../api/client';
 import { recordDownload } from './downloadHistory';
+import { registerPlugin } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { showGlobalToast } from '../components/common/ToastHost';
+
+interface MediaDownloaderPluginInterface {
+  saveToPublicDownloads(options: {
+    base64Data: string;
+    fileName: string;
+    mimeType?: string;
+  }): Promise<{ success: boolean; path: string; fileName: string }>;
+}
+
+const MediaDownloader = registerPlugin<MediaDownloaderPluginInterface>('MediaDownloader');
 
 function isCapacitorNative(): boolean {
   if (typeof window === 'undefined') return false;
@@ -37,7 +48,7 @@ export async function downloadPdf(url: string | null | undefined, fileName = 'do
     return;
   }
 
-  // Format valid PDF filename
+  // Clean and sanitize PDF filename
   let safeName = fileName.replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, '_').trim() || 'document.pdf';
   if (!safeName.toLowerCase().endsWith('.pdf')) {
     safeName += '.pdf';
@@ -61,7 +72,7 @@ export async function downloadPdf(url: string | null | undefined, fileName = 'do
   try {
     showGlobalToast(`Downloading ${safeName}...`, 'info');
 
-    // Fetch arraybuffer
+    // Fetch arraybuffer from target URL
     let arrayBuffer: ArrayBuffer;
     if (target.includes('/api/') || target.startsWith(BACKEND_ORIGIN)) {
       const res = await apiClient.get(target, { responseType: 'arraybuffer' });
@@ -79,23 +90,40 @@ export async function downloadPdf(url: string | null | undefined, fileName = 'do
     // Validate PDF magic bytes (%PDF)
     if (!isPdfMagicBytes(arrayBuffer)) {
       console.warn('[PDF Download] Response is not a valid PDF file');
-      showGlobalToast('Unable to download: File is not a valid PDF document.', 'error');
+      showGlobalToast('Download failed. File is not a valid PDF document.', 'error');
       return;
     }
 
-    // 1. Capacitor Android Native Storage Flow
+    // 1. Capacitor Android Native Public Storage Flow
     if (isCapacitorNative()) {
       const base64Data = arrayBufferToBase64(arrayBuffer);
 
-      await Filesystem.writeFile({
-        path: safeName,
-        data: base64Data,
-        directory: Directory.Documents,
-        recursive: true,
-      });
+      try {
+        const result = await MediaDownloader.saveToPublicDownloads({
+          base64Data,
+          fileName: safeName,
+          mimeType: 'application/pdf',
+        });
 
-      showGlobalToast(`Downloaded to Documents: ${safeName}`, 'success');
-      return;
+        if (result && result.success) {
+          const displayPath = result.path || `Downloads/Kathir Academy/${safeName}`;
+          showGlobalToast(`Downloaded to ${displayPath}`, 'success');
+          return;
+        }
+      } catch (nativeErr: any) {
+        console.warn('[PDF Native Download Failed, trying Filesystem fallback]', nativeErr);
+        
+        // Fallback to Filesystem.writeFile in Documents if native MediaDownloader plugin call fails
+        await Filesystem.writeFile({
+          path: `Kathir_Academy/${safeName}`,
+          data: base64Data,
+          directory: Directory.Documents,
+          recursive: true,
+        });
+
+        showGlobalToast(`Downloaded to Documents/Kathir_Academy/${safeName}`, 'success');
+        return;
+      }
     }
 
     // 2. Web Browser Flow (Desktop / Mobile Web)
@@ -113,6 +141,6 @@ export async function downloadPdf(url: string | null | undefined, fileName = 'do
     showGlobalToast(`Downloaded ${safeName}`, 'success');
   } catch (err: any) {
     console.error('[PDF Download] Download failed:', err);
-    showGlobalToast('Download failed. Please check your network connection.', 'error');
+    showGlobalToast('Download failed. Please try again.', 'error');
   }
 }

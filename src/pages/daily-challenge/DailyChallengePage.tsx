@@ -216,7 +216,7 @@ function StreakCard({ streak }: { streak: any }) {
   const offset = circ * (1 - pct / 100);
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft animate-pop-in">
-      <div className="flex items-center gap-5">
+      <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-5">
         <div className="relative w-14 h-14 shrink-0">
           <svg viewBox="0 0 60 60" className="w-14 h-14 -rotate-90">
             <circle cx="30" cy="30" r="26" fill="none" stroke="#f1f5f9" strokeWidth="6" />

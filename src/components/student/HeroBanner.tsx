@@ -19,11 +19,11 @@ interface HeroBannerProps {
 export function HeroBanner({ slug, title, description, children, className }: HeroBannerProps) {
   const gradient = GRADIENTS[slug || 'default'] || GRADIENTS.default;
   return (
-    <div className={cn('relative overflow-hidden rounded-3xl bg-gradient-to-br p-8 md:p-12 text-white', gradient, className)}>
+    <div className={cn('relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br p-5 sm:p-8 md:p-12 text-white', gradient, className)}>
       <div className="relative z-10 max-w-2xl">
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{title}</h1>
-        <p className="mt-3 text-base md:text-lg text-white/80 leading-relaxed">{description}</p>
-        {children && <div className="mt-6">{children}</div>}
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-snug">{title}</h1>
+        <p className="mt-2 sm:mt-3 text-sm sm:text-base md:text-lg text-white/80 leading-relaxed">{description}</p>
+        {children && <div className="mt-4 sm:mt-6">{children}</div>}
       </div>
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
       <div className="absolute -bottom-8 -right-8 w-64 h-64 bg-white/5 rounded-full blur-3xl" />

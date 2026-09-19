@@ -16,7 +16,7 @@ export function SearchBar({ className }: { className?: string }) {
 
   return (
     <form onSubmit={handleSubmit} className={cn('relative', className)}>
-      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+      <Search className="absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
       <input
         ref={inputRef}
         value={query}
@@ -25,7 +25,7 @@ export function SearchBar({ className }: { className?: string }) {
         onBlur={() => setFocused(false)}
         placeholder="Search Topics, Notes, MCQs, Videos..."
         className={cn(
-          'w-full h-10 pl-10 pr-8 text-sm bg-slate-100 border border-transparent rounded-xl outline-none transition-all',
+          'w-full h-10 pl-9 sm:pl-10 pr-8 text-xs sm:text-sm placeholder:truncate bg-slate-100 border border-transparent rounded-xl outline-none transition-all',
           focused ? 'bg-white border-brand-300 shadow-sm ring-2 ring-brand-100' : 'hover:bg-slate-200/70'
         )}
       />

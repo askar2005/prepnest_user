@@ -56,6 +56,7 @@ export function MockTestPage() {
   const [endTime, setEndTime] = useState(0);
   const [currentQ, setCurrentQ] = useState(0);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<any>(null);
   const questionRef = useRef<HTMLDivElement>(null);
@@ -209,18 +210,18 @@ export function MockTestPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-3">
-              <p className="text-2xl font-bold text-emerald-700">{r.correctCount}</p>
-              <p className="text-xs text-emerald-600">Correct</p>
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-3 text-center">
+            <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-2 sm:p-3">
+              <p className="text-xl sm:text-2xl font-bold text-emerald-700">{r.correctCount}</p>
+              <p className="text-[11px] sm:text-xs text-emerald-600">Correct</p>
             </div>
-            <div className="rounded-xl bg-red-50 border border-red-100 p-3">
-              <p className="text-2xl font-bold text-red-600">{r.wrongCount}</p>
-              <p className="text-xs text-red-500">Wrong</p>
+            <div className="rounded-xl bg-red-50 border border-red-100 p-2 sm:p-3">
+              <p className="text-xl sm:text-2xl font-bold text-red-600">{r.wrongCount}</p>
+              <p className="text-[11px] sm:text-xs text-red-500">Wrong</p>
             </div>
-            <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
-              <p className="text-2xl font-bold text-slate-600">{r.skippedCount}</p>
-              <p className="text-xs text-slate-500">Skipped</p>
+            <div className="rounded-xl bg-slate-50 border border-slate-200 p-2 sm:p-3">
+              <p className="text-xl sm:text-2xl font-bold text-slate-600">{r.skippedCount}</p>
+              <p className="text-[11px] sm:text-xs text-slate-500">Skipped</p>
             </div>
           </div>
 
@@ -283,7 +284,16 @@ export function MockTestPage() {
             <h1 className="text-lg font-semibold text-slate-900 truncate">{test.title}</h1>
             <p className="text-xs text-slate-400">{answeredCount}/{questions.length} answered · {review.size} marked for review</p>
           </div>
-          <TimerBadge endTime={endTime} onExpire={onExpire} />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setMobilePaletteOpen(true)}
+              className="lg:hidden inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+            >
+              <BarChart3 className="w-4 h-4 text-brand-600" />
+              <span>Palette ({questions.length})</span>
+            </button>
+            <TimerBadge endTime={endTime} onExpire={onExpire} />
+          </div>
         </div>
 
         <div className="rounded-[16px] border border-slate-200 bg-white p-4 sm:p-6 shadow-soft" ref={questionRef} tabIndex={-1}>
@@ -378,7 +388,7 @@ export function MockTestPage() {
 
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40" onClick={() => setConfirmOpen(false)}>
-          <div className="w-full max-w-sm rounded-2xl bg-white shadow-xl p-5 space-y-4" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-sm rounded-2xl bg-white shadow-xl p-5 space-y-4 max-h-[90dvh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <p className="font-semibold text-slate-900">Submit test?</p>
             <p className="text-sm text-slate-500">
               {answeredCount}/{questions.length} answered{review.size > 0 && `, ${review.size} marked for review`}. You can still review questions before submitting.
@@ -389,6 +399,61 @@ export function MockTestPage() {
               </Button>
               <Button variant="secondary" onClick={() => setConfirmOpen(false)}>Keep Solving</Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Question Palette Modal */}
+      {mobilePaletteOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/40 backdrop-blur-xs" onClick={() => setMobilePaletteOpen(false)}>
+          <div className="w-full max-w-md rounded-t-3xl sm:rounded-2xl bg-white shadow-2xl p-5 space-y-4 max-h-[85dvh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <p className="text-base font-bold text-slate-900">Question Palette</p>
+                <p className="text-xs text-slate-400">{answeredCount}/{questions.length} answered</p>
+              </div>
+              <button onClick={() => setMobilePaletteOpen(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 font-semibold text-sm">Close</button>
+            </div>
+            <div className="grid grid-cols-5 gap-2">
+              {questions.map((question, i) => {
+                const isCurrent = i === currentQ;
+                const isAnswered = answers[question.id] !== undefined && String(answers[question.id] ?? '').trim() !== '';
+                const isVisited = visited.has(question.id);
+                const isReview = review.has(question.id);
+                return (
+                  <button
+                    key={question.id}
+                    onClick={() => { goToQuestion(i); setMobilePaletteOpen(false); }}
+                    aria-label={`Question ${i + 1}`}
+                    className={cn(
+                      'h-9 w-full rounded-xl text-xs font-semibold transition flex items-center justify-center',
+                      isCurrent
+                        ? 'bg-purple-600 text-white ring-2 ring-purple-300'
+                        : isAnswered
+                          ? 'bg-emerald-500 text-white'
+                          : isReview
+                            ? 'bg-amber-400 text-white'
+                            : isVisited
+                              ? 'bg-sky-200 text-sky-900'
+                              : 'bg-slate-100 text-slate-500',
+                      isCurrent && isReview && 'ring-2 ring-amber-400',
+                      isCurrent && isAnswered && 'ring-2 ring-emerald-300'
+                    )}
+                  >
+                    {i + 1}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-[11px] text-slate-600">
+              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded bg-emerald-500 shrink-0" /> Answered</div>
+              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded bg-sky-300 shrink-0" /> Visited</div>
+              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded bg-purple-600 shrink-0" /> Current</div>
+              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded bg-amber-400 shrink-0" /> Marked for review</div>
+            </div>
+            <Button variant="danger" onClick={() => { setMobilePaletteOpen(false); setConfirmOpen(true); }} disabled={submitting} className="w-full">
+              {submitting ? 'Submitting...' : 'Submit Test'}
+            </Button>
           </div>
         </div>
       )}

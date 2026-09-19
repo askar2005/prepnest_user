@@ -61,7 +61,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+    <div className="flex min-h-[100dvh] py-8 sm:py-12 items-center justify-center bg-bg px-4">
       <div className="w-full max-w-sm">
         {expired && <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">Session expired. Please log in again.</div>}
         <div className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-soft">

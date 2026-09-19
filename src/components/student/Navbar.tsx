@@ -40,8 +40,8 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100">
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
-        <div className="flex items-center gap-4 h-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
+        <div className="flex items-center gap-2 sm:gap-4 h-16">
           {/* Mobile hamburger */}
           <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 -ml-2 rounded-lg hover:bg-slate-100 text-slate-600 md:hidden">
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -56,12 +56,12 @@ export function Navbar() {
           </Link>
 
           {/* Search */}
-          <div className="flex-1 max-w-xl mx-2 md:mx-4">
+          <div className="flex-1 min-w-0 max-w-xl mx-1 sm:mx-2 md:mx-4">
             <SearchBar />
           </div>
 
           {/* Right */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             <Link to="/notifications" className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors relative">
               <Bell className="w-5 h-5" />
               {count > 0 && (
@@ -82,7 +82,7 @@ export function Navbar() {
 
       {/* Mobile navigation drawer */}
       <div className={cn(
-        'fixed top-0 left-0 z-40 h-full w-72 bg-white border-r border-slate-200 shadow-lg transform transition-transform duration-300 md:hidden overflow-y-auto',
+        'fixed top-0 left-0 z-40 h-full w-72 max-w-[calc(100vw-3rem)] bg-white border-r border-slate-200 shadow-lg transform transition-transform duration-300 md:hidden overflow-y-auto',
         mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
       )}>
         <div className="flex items-center justify-between p-4 border-b border-slate-100">

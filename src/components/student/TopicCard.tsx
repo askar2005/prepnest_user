@@ -75,7 +75,7 @@ export function TopicCard({ id, categorySlug, name, description, thumbnail, diff
 
         {/* Stats */}
         {stats && (
-          <div className="flex items-center gap-4 text-xs text-slate-500">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 text-xs text-slate-500">
             {stats.notes !== undefined && <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5 text-slate-400" /><span className="font-semibold text-slate-700">{stats.notes}</span> Notes</span>}
             {stats.mcqs !== undefined && <span className="flex items-center gap-1"><HelpCircle className="w-3.5 h-3.5 text-slate-400" /><span className="font-semibold text-slate-700">{stats.mcqs}</span> MCQs</span>}
             {stats.videos !== undefined && <span className="flex items-center gap-1"><Video className="w-3.5 h-3.5 text-slate-400" /><span className="font-semibold text-slate-700">{stats.videos}</span> Videos</span>}

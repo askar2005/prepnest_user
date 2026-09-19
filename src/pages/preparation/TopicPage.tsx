@@ -134,8 +134,8 @@ export default function TopicPage() {
       )}
 
       {/* ─── Sticky Tab Bar ─── */}
-      <div ref={tabBarRef} className="sticky top-0 z-30 bg-white border-b border-slate-200 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
-        <div className="flex gap-0 overflow-x-auto scrollbar-none">
+      <div ref={tabBarRef} className="sticky top-0 z-30 bg-white border-b border-slate-200 -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 px-3 sm:px-4 md:px-6 lg:px-8">
+        <div className="flex gap-0 overflow-x-auto scrollbar-none touch-pan-x">
           {TABS.map((tab) => {
             const isActive = activeTab === tab.key;
             return (
@@ -143,7 +143,7 @@ export default function TopicPage() {
                 key={tab.key}
                 onClick={() => handleTabChange(tab.key)}
                 className={cn(
-                  'flex items-center gap-1.5 px-4 py-3.5 text-sm font-medium border-b-2 transition-all shrink-0',
+                  'flex items-center gap-1.5 px-3 sm:px-4 py-3 sm:py-3.5 text-xs sm:text-sm font-medium border-b-2 transition-all shrink-0',
                   isActive ? 'text-brand-600 border-brand-600' : 'text-slate-500 border-transparent hover:text-slate-700 hover:border-slate-300'
                 )}
               >
@@ -224,14 +224,14 @@ function OverviewTab({ topic, loading }: { topic: any; loading: boolean }) {
       {/* Resource Counts */}
       <section>
         <h2 className="text-lg font-bold text-slate-900 mb-4">Available Resources</h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           {stats.map((s) => (
-            <div key={s.label} className="rounded-2xl bg-white border border-slate-100 p-5 shadow-card flex items-center gap-4">
-              <div className={cn('w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0', s.color)}>
-                <s.icon className="w-6 h-6 text-white" />
+            <div key={s.label} className="rounded-2xl bg-white border border-slate-100 p-3.5 sm:p-5 shadow-card flex items-center gap-3 sm:gap-4">
+              <div className={cn('w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0', s.color)}>
+                <s.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900">{s.value}</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-900">{s.value}</p>
                 <p className="text-xs text-slate-400">{s.label}</p>
               </div>
             </div>

@@ -58,20 +58,20 @@ export function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Hero Row */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="lg:col-span-2">
           <HeroBanner title={`Welcome back${user?.name ? `, ${user.name.split(' ')[0]}` : ''}`} description="Continue your learning journey with Notes, Videos, MCQs and Mock Tests.">
-            <div className="flex gap-3">
-              <Link to="/daily-challenge" className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium rounded-xl backdrop-blur-sm transition-colors">
+            <div className="flex flex-wrap gap-2.5 sm:gap-3">
+              <Link to="/daily-challenge" className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 bg-white/20 hover:bg-white/30 text-white text-xs sm:text-sm font-medium rounded-xl backdrop-blur-sm transition-colors">
                 <Zap className="w-4 h-4" /> Daily Challenge
               </Link>
-              <Link to="/leaderboard" className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium rounded-xl backdrop-blur-sm transition-colors">
+              <Link to="/leaderboard" className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 bg-white/20 hover:bg-white/30 text-white text-xs sm:text-sm font-medium rounded-xl backdrop-blur-sm transition-colors">
                 <TrendingUp className="w-4 h-4" /> Leaderboard
               </Link>
             </div>
           </HeroBanner>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
           <StreakCard streak={streakData?.currentStreak || 0} />
           <WeeklyGoalCard progress={progress?.weeklyProgress || 0} target={10} />
         </div>

@@ -30,7 +30,7 @@ export function VerifyResetOtpPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+    <div className="flex min-h-[100dvh] py-8 sm:py-12 items-center justify-center bg-bg px-4">
       <div className="w-full max-w-sm rounded-[16px] border border-slate-200 bg-white p-6 shadow-soft">
         <h1 className="text-xl font-semibold text-slate-900">Verify OTP</h1>
         <p className="mt-1 text-sm text-slate-500">Enter the OTP sent to {email}</p>

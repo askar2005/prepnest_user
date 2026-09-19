@@ -20,7 +20,7 @@ export function ResetPasswordPage() {
 
   if (!email || !otp) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+      <div className="flex min-h-[100dvh] py-8 sm:py-12 items-center justify-center bg-bg px-4">
         <div className="w-full max-w-sm rounded-[16px] border border-slate-200 bg-white p-6 text-center shadow-soft">
           <h1 className="text-xl font-semibold text-slate-900">Reset link expired</h1>
           <p className="mt-2 text-sm text-slate-500">Please request a new OTP to reset your password.</p>
@@ -45,7 +45,7 @@ export function ResetPasswordPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+    <div className="flex min-h-[100dvh] py-8 sm:py-12 items-center justify-center bg-bg px-4">
       <div className="w-full max-w-sm rounded-[16px] border border-slate-200 bg-white p-6 shadow-soft">
         <h1 className="text-xl font-semibold text-slate-900">Set new password</h1>
         <p className="mt-1 text-sm text-slate-500">Choose a strong password.</p>

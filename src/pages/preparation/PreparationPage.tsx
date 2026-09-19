@@ -62,7 +62,7 @@ export default function StudentPreparationPage() {
     <div className="space-y-8">
       {/* Hero Banner */}
       <HeroBanner slug={category} title={name} description={desc}>
-        <div className="flex flex-wrap gap-6 mt-4">
+        <div className="flex flex-wrap gap-3 sm:gap-6 mt-3 sm:mt-4">
           <Stat label="Topics" value={totalTopics} />
           <Stat label="Notes" value={totalNotes} />
           <Stat label="MCQs" value={totalMcqs} />

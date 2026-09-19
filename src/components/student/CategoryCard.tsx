@@ -27,7 +27,7 @@ export function CategoryCard({ slug, name, coverImage, stats, progress }: Catego
       <div className="relative h-40 overflow-hidden bg-slate-100">
         <img src={imgSrc} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-        <h3 className="absolute bottom-3 left-4 text-xl font-bold text-white">{name}</h3>
+        <h3 className="absolute bottom-3 left-4 right-4 text-lg sm:text-xl font-bold text-white line-clamp-1">{name}</h3>
       </div>
       <div className="p-4 space-y-3">
         <div className="grid grid-cols-4 gap-2">

@@ -100,7 +100,7 @@ export function MockTestsListPage() {
                     <p className="text-xs text-slate-400">{t.preparationCategory.name}{t.topic?.name ? ` · ${t.topic.name}` : ''}</p>
                   )}
                   {t.description && <p className="text-sm text-slate-500 line-clamp-2">{t.description}</p>}
-                  <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 text-xs text-slate-500">
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100"><Timer className="w-3 h-3" />{t.durationMinutes} min</span>
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100"><FileQuestion className="w-3 h-3" />{t._count?.questions ?? 0} questions</span>
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100"><BarChart3 className="w-3 h-3" />{t.totalMarks ?? 0} marks</span>

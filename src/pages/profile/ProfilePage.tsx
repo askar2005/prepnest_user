@@ -21,9 +21,9 @@ export function ProfilePage() {
           <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white text-2xl font-bold shadow-lg shrink-0">
             {user?.name?.charAt(0) || 'U'}
           </div>
-          <div className="text-center sm:text-left">
-            <h2 className="text-xl font-bold text-slate-900">{user?.name || 'User'}</h2>
-            <p className="text-sm text-slate-500">{user?.email}</p>
+          <div className="text-center sm:text-left min-w-0">
+            <h2 className="text-xl font-bold text-slate-900 truncate">{user?.name || 'User'}</h2>
+            <p className="text-sm text-slate-500 break-all sm:truncate">{user?.email}</p>
             <span className="inline-block mt-1.5 px-3 py-0.5 text-xs font-medium bg-brand-50 text-brand-600 rounded-full capitalize">{user?.role?.toLowerCase()}</span>
           </div>
         </div>

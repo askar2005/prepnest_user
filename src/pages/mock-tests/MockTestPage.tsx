@@ -8,6 +8,7 @@ import {
   Trophy, Timer, BarChart3, BookOpenCheck, RotateCcw,
 } from 'lucide-react';
 import { cn } from '../../lib/cn';
+import { useModalBackHandler } from '../../lib/backButtonManager';
 
 type Q = {
   id: string; question: string; questionType: string;
@@ -57,6 +58,9 @@ export function MockTestPage() {
   const [currentQ, setCurrentQ] = useState(0);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
+
+  useModalBackHandler(confirmOpen, () => setConfirmOpen(false));
+  useModalBackHandler(mobilePaletteOpen, () => setMobilePaletteOpen(false));
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<any>(null);
   const questionRef = useRef<HTMLDivElement>(null);

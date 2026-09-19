@@ -25,6 +25,7 @@ import { DownloadsPage } from '../pages/downloads/DownloadsPage';
 import NotificationsListPage from '../pages/notifications/NotificationsListPage';
 import NotificationDetailPage from '../pages/notifications/NotificationDetailPage';
 import { SplashScreen } from '../components/common/SplashScreen';
+import { useAndroidBackButton } from '../lib/backButtonManager';
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
 
 function AppRouter() {
   const auth = useAuth();
+  useAndroidBackButton();
 
   return (
     <>

@@ -7,6 +7,7 @@ import { AvatarMenu } from './AvatarMenu';
 import { useQuery } from '@tanstack/react-query';
 import { fetchUnreadNotificationCount } from '../../api/student';
 import { cn } from '../../lib/cn';
+import { useModalBackHandler } from '../../lib/backButtonManager';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: Home },
@@ -26,6 +27,8 @@ export function Navbar() {
   const { user } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useModalBackHandler(mobileMenuOpen, () => setMobileMenuOpen(false));
 
   const { data: unread } = useQuery({
     queryKey: ['notif-unread'],

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useModalBackHandler } from '../../lib/backButtonManager';
 
 type Props = {
   open: boolean;
@@ -14,6 +15,8 @@ type Props = {
 };
 
 export function ConfirmDialog({ open, title, message, confirmLabel = 'Confirm', cancelLabel = 'Cancel', variant = 'danger', loading, onConfirm, onCancel }: Props) {
+  useModalBackHandler(open, onCancel);
+
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };

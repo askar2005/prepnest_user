@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { apiClient } from '../../api/client';
 import { useToast } from '../common/ToastHost';
 import { AlertTriangle, Trash2, X, Lock, ShieldAlert } from 'lucide-react';
+import { useModalBackHandler } from '../../lib/backButtonManager';
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -10,6 +11,8 @@ interface DeleteAccountModalProps {
 }
 
 export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, onClose }) => {
+  useModalBackHandler(isOpen, onClose);
+
   const { logout } = useAuth();
   const { pushToast } = useToast();
   const [password, setPassword] = useState('');

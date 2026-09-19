@@ -116,7 +116,11 @@ export default function StudentPreparationPage() {
                     difficulty={topic.difficulty}
                     estimatedTime={topic.estimatedTime}
                     updatedAt={topic.updatedAt || topic.createdAt}
-                    stats={{ notes: topic._count?.studyMaterials || 0, mcqs: topic._count?.mcqQuestions || 0, videos: topic._count?.videos || 0 }}
+                    stats={{
+                      notes: topic.counts?.notes ?? topic._count?.notes ?? topic._count?.studyMaterials ?? 0,
+                      mcqs: topic.counts?.mcqs ?? topic._count?.mcqs ?? topic._count?.mcqQuestions ?? 0,
+                      videos: topic.counts?.videos ?? topic._count?.videos ?? 0,
+                    }}
                   />
                 </motion.div>
               ))}
@@ -150,7 +154,11 @@ export default function StudentPreparationPage() {
                       difficulty={topic.difficulty}
                       estimatedTime={topic.estimatedTime}
                       updatedAt={topic.updatedAt || topic.createdAt}
-                      stats={{ notes: topic._count?.studyMaterials || 0, mcqs: topic._count?.mcqQuestions || 0, videos: topic._count?.videos || 0 }}
+                      stats={{
+                        notes: topic.counts?.notes ?? topic._count?.notes ?? topic._count?.studyMaterials ?? 0,
+                        mcqs: topic.counts?.mcqs ?? topic._count?.mcqs ?? topic._count?.mcqQuestions ?? 0,
+                        videos: topic.counts?.videos ?? topic._count?.videos ?? 0,
+                      }}
                     />
                   </motion.div>
                 ))}
@@ -179,7 +187,11 @@ export default function StudentPreparationPage() {
                       difficulty={topic.difficulty}
                       estimatedTime={topic.estimatedTime}
                       updatedAt={topic.updatedAt || topic.createdAt}
-                      stats={{ notes: topic._count?.studyMaterials || 0, mcqs: topic._count?.mcqQuestions || 0, videos: topic._count?.videos || 0 }}
+                      stats={{
+                        notes: topic.counts?.notes ?? topic._count?.notes ?? topic._count?.studyMaterials ?? 0,
+                        mcqs: topic.counts?.mcqs ?? topic._count?.mcqs ?? topic._count?.mcqQuestions ?? 0,
+                        videos: topic.counts?.videos ?? topic._count?.videos ?? 0,
+                      }}
                     />
                   </motion.div>
                 ))}
@@ -209,7 +221,11 @@ export default function StudentPreparationPage() {
                       difficulty={topic.difficulty}
                       estimatedTime={topic.estimatedTime}
                       updatedAt={topic.updatedAt || topic.createdAt}
-                      stats={{ notes: topic._count?.studyMaterials || 0, mcqs: topic._count?.mcqQuestions || 0, videos: topic._count?.videos || 0 }}
+                      stats={{
+                        notes: topic.counts?.notes ?? topic._count?.notes ?? topic._count?.studyMaterials ?? 0,
+                        mcqs: topic.counts?.mcqs ?? topic._count?.mcqs ?? topic._count?.mcqQuestions ?? 0,
+                        videos: topic.counts?.videos ?? topic._count?.videos ?? 0,
+                      }}
                     />
                   </motion.div>
                 ))}

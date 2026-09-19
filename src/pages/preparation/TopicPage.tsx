@@ -117,14 +117,14 @@ export default function TopicPage() {
                 {estimatedTime && (
                   <span className="flex items-center gap-1 text-xs text-white/70"><Clock className="w-3.5 h-3.5" />{fmtMinutes(estimatedTime)}</span>
                 )}
-                {topic?._count && (
+                {(topic?.counts || topic?._count) && (
                   <>
                     <span className="text-xs text-white/50">·</span>
-                    <span className="text-xs text-white/70">{topic._count.studyMaterials || 0} Notes</span>
+                    <span className="text-xs text-white/70">{topic.counts?.notes ?? topic._count?.notes ?? topic._count?.studyMaterials ?? 0} Notes</span>
                     <span className="text-xs text-white/50">·</span>
-                    <span className="text-xs text-white/70">{topic._count.mcqQuestions || 0} MCQs</span>
+                    <span className="text-xs text-white/70">{topic.counts?.mcqs ?? topic._count?.mcqs ?? topic._count?.mcqQuestions ?? 0} MCQs</span>
                     <span className="text-xs text-white/50">·</span>
-                    <span className="text-xs text-white/70">{topic._count.videos || 0} Videos</span>
+                    <span className="text-xs text-white/70">{topic.counts?.videos ?? topic._count?.videos ?? 0} Videos</span>
                   </>
                 )}
               </div>
@@ -180,9 +180,9 @@ function OverviewTab({ topic, loading }: { topic: any; loading: boolean }) {
   if (!topic) return <div className="text-center py-16 text-slate-500">Topic not found.</div>;
 
   const stats = [
-    { label: 'Notes', value: topic._count?.studyMaterials || 0, icon: BookOpen, color: 'from-blue-500 to-indigo-600' },
-    { label: 'MCQs', value: topic._count?.mcqQuestions || 0, icon: HelpCircle, color: 'from-emerald-500 to-teal-600' },
-    { label: 'Videos', value: topic._count?.videos || 0, icon: Video, color: 'from-purple-500 to-violet-600' },
+    { label: 'Notes', value: topic.counts?.notes ?? topic._count?.notes ?? topic._count?.studyMaterials ?? 0, icon: BookOpen, color: 'from-blue-500 to-indigo-600' },
+    { label: 'MCQs', value: topic.counts?.mcqs ?? topic._count?.mcqs ?? topic._count?.mcqQuestions ?? 0, icon: HelpCircle, color: 'from-emerald-500 to-teal-600' },
+    { label: 'Videos', value: topic.counts?.videos ?? topic._count?.videos ?? 0, icon: Video, color: 'from-purple-500 to-violet-600' },
   ];
 
   return (

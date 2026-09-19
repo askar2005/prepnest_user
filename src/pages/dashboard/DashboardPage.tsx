@@ -162,8 +162,13 @@ export function DashboardPage() {
                 slug={cat.slug}
                 name={cat.name || CATEGORY_LABELS[cat.slug] || cat.slug}
                 coverImage={cat.coverImage}
-                stats={{ notes: cat._count?.studyMaterials || 0, mcqs: cat._count?.mcqQuestions || 0, videos: cat._count?.videos || 0, mockTests: cat._count?.mockTests || 0 }}
-                progress={Math.min(100, Math.round(((cat._count?.studyMaterials || 0) / 50) * 100))}
+                stats={{
+                  notes: cat.counts?.notes ?? cat._count?.notes ?? cat._count?.studyMaterials ?? 0,
+                  mcqs: cat.counts?.mcqs ?? cat._count?.mcqs ?? cat._count?.mcqQuestions ?? 0,
+                  videos: cat.counts?.videos ?? cat._count?.videos ?? 0,
+                  mockTests: cat.counts?.mockTests ?? cat._count?.mockTests ?? 0,
+                }}
+                progress={Math.min(100, Math.round(((cat.counts?.notes ?? cat._count?.notes ?? cat._count?.studyMaterials ?? 0) / 50) * 100))}
               />
             </motion.div>
           ))}

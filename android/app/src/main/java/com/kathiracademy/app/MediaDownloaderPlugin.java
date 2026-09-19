@@ -2,12 +2,15 @@ package com.kathiracademy.app;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
+
+import androidx.core.content.FileProvider;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -106,6 +109,68 @@ public class MediaDownloaderPlugin extends Plugin {
 
         } catch (Exception e) {
             call.reject("Failed to write file to Downloads: " + e.getMessage(), e);
+        }
+    }
+
+    @PluginMethod
+    public void openInDrive(PluginCall call) {
+        String base64Data = call.getString("base64Data");
+        String fileName = call.getString("fileName");
+
+        if (base64Data == null || base64Data.isEmpty()) {
+            call.reject("Base64 data is empty or missing");
+            return;
+        }
+
+        if (fileName == null || fileName.isEmpty()) {
+            fileName = "Kathir_Academy_Document.pdf";
+        }
+
+        // Sanitize filename
+        fileName = fileName.replaceAll("[\\\\/:*?\"<>|]", "_");
+        if (!fileName.toLowerCase().endsWith(".pdf")) {
+            fileName += ".pdf";
+        }
+
+        Context context = getContext();
+        byte[] bytes;
+        try {
+            bytes = Base64.decode(base64Data, Base64.DEFAULT);
+        } catch (Exception e) {
+            call.reject("Invalid base64 encoding: " + e.getMessage());
+            return;
+        }
+
+        try {
+            // Write PDF to app cache directory
+            File cacheDir = context.getCacheDir();
+            File pdfFile = new File(cacheDir, fileName);
+            FileOutputStream out = new FileOutputStream(pdfFile);
+            out.write(bytes);
+            out.flush();
+            out.close();
+
+            // Obtain FileProvider Content URI
+            String authority = context.getPackageName() + ".fileprovider";
+            Uri contentUri = FileProvider.getUriForFile(context, authority, pdfFile);
+
+            // Intent to view PDF in Google Drive PDF Viewer or default Android PDF reader
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(contentUri, "application/pdf");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            // Explicit Google Drive PDF Viewer intent chooser target
+            Intent chooser = Intent.createChooser(intent, "Open PDF with Drive");
+            chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(chooser);
+
+            JSObject ret = new JSObject();
+            ret.put("success", true);
+            call.resolve(ret);
+
+        } catch (Exception e) {
+            call.reject("Failed to open PDF in Drive: " + e.getMessage(), e);
         }
     }
 }

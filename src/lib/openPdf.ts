@@ -1,10 +1,11 @@
 /**
- * Open a PDF document in Kathir Academy using an in-app PDF document viewer.
+ * Open a PDF document in Kathir Academy using a full-screen mobile PDF document viewer.
  *
  * Features:
+ * - Full-screen PDF document view (clean Google Drive style, no custom application toolbar).
  * - Render actual PDF pages with layout, text, tables, and images preserved using PDF.js.
  * - Multi-page vertical smooth scrolling.
- * - Zoom controls (+ In, - Out, Reset / Fit Width) and pinch-to-zoom gesture support.
+ * - Touch pinch-to-zoom gesture support.
  * - Crisp high-DPI canvas rendering.
  * - Clean Android Hardware Back Button navigation handling.
  * - Safe loading state and error handling.
@@ -38,7 +39,7 @@ function isCapacitorNative(): boolean {
   return !!(cap && typeof cap.isNativePlatform === 'function' && cap.isNativePlatform());
 }
 
-/** Renders complete in-app PDF viewer modal with zoom controls, pinch-zoom, and Android back button support */
+/** Renders full-screen in-app PDF viewer modal without custom toolbars */
 function renderInAppPdfModal(arrayBuffer: ArrayBuffer, originalUrl: string, documentTitle = 'PDF Document') {
   try {
     const existing = document.getElementById('prepnest-pdf-modal');
@@ -49,53 +50,14 @@ function renderInAppPdfModal(arrayBuffer: ArrayBuffer, originalUrl: string, docu
     modal.className = 'fixed inset-0 z-[9999] bg-slate-950 flex flex-col w-full h-full text-white font-sans select-none animate-fade-in';
 
     modal.innerHTML = `
-      <!-- Header Toolbar -->
-      <div class="flex items-center justify-between px-3 py-2.5 bg-slate-900 border-b border-slate-800 shrink-0 shadow-md gap-2">
-        <!-- Title & Page Info -->
-        <div class="flex items-center gap-2 overflow-hidden min-w-0 pr-1">
-          <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-          </svg>
-          <div class="flex flex-col min-w-0">
-            <span class="text-xs sm:text-sm font-semibold truncate text-slate-100">${documentTitle}</span>
-            <span id="pdf-page-indicator" class="text-[10px] text-slate-400 font-mono">Loading pages...</span>
-          </div>
-        </div>
-
-        <!-- Zoom Controls & Action Buttons -->
-        <div class="flex items-center gap-1.5 shrink-0">
-          <div class="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700/60">
-            <button id="pdf-zoom-out" class="p-1.5 hover:bg-slate-700 rounded-md text-slate-300 hover:text-white transition active:scale-95 cursor-pointer" title="Zoom Out (-)">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
-            </button>
-            <span id="pdf-zoom-val" class="px-1.5 text-xs font-mono font-medium text-slate-200 min-w-[42px] text-center">100%</span>
-            <button id="pdf-zoom-in" class="p-1.5 hover:bg-slate-700 rounded-md text-slate-300 hover:text-white transition active:scale-95 cursor-pointer" title="Zoom In (+)">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            </button>
-            <button id="pdf-zoom-reset" class="hidden sm:inline-block px-2 py-1 hover:bg-slate-700 rounded text-[11px] font-medium text-indigo-400 hover:text-indigo-300 transition cursor-pointer" title="Reset Zoom">
-              Reset
-            </button>
-          </div>
-
-          <button id="pdf-modal-download-btn" class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition active:scale-95 shadow-md cursor-pointer">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            <span class="hidden xs:inline">Download</span>
-          </button>
-
-          <button id="pdf-modal-close-btn" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer" title="Close">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Main Canvas Container -->
-      <div id="pdf-scroll-container" class="flex-1 w-full h-full bg-slate-950 overflow-auto p-3 sm:p-6 flex flex-col items-center gap-4 relative" style="touch-action: pan-x pan-y;">
+      <!-- Full Screen PDF Canvas Scroll Container -->
+      <div id="pdf-scroll-container" class="flex-1 w-full h-full bg-slate-950 overflow-auto p-2 sm:p-4 flex flex-col items-center gap-3 relative" style="touch-action: pan-x pan-y;">
         <div id="pdf-loading-spinner" class="my-auto flex flex-col items-center gap-3 text-slate-400">
           <div class="w-9 h-9 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-          <p class="text-xs font-medium">Rendering PDF document...</p>
+          <p class="text-xs font-medium">Loading document...</p>
         </div>
 
-        <div id="pdf-pages-wrapper" class="flex flex-col items-center gap-4 transition-transform duration-100 ease-out origin-top"></div>
+        <div id="pdf-pages-wrapper" class="flex flex-col items-center gap-3 transition-transform duration-100 ease-out origin-top w-full"></div>
       </div>
     `;
 
@@ -158,54 +120,22 @@ function renderInAppPdfModal(arrayBuffer: ArrayBuffer, originalUrl: string, docu
 
     window.addEventListener('keydown', handleKeyDown);
 
-    document.getElementById('pdf-modal-close-btn')?.addEventListener('click', () => {
-      if (window.history.state?.pdfModal) {
-        window.history.back();
-      } else {
-        cleanup();
-      }
-    });
-
     const triggerDownload = () => downloadPdf(originalUrl, `${documentTitle}.pdf`);
-    document.getElementById('pdf-modal-download-btn')?.addEventListener('click', triggerDownload);
 
-    // Zooming Logic
+    // Zooming Logic & Display
     const pagesWrapper = document.getElementById('pdf-pages-wrapper');
-    const zoomValDisplay = document.getElementById('pdf-zoom-val');
+    const scrollContainer = document.getElementById('pdf-scroll-container');
 
     const updateZoomDisplay = () => {
-      if (zoomValDisplay) {
-        zoomValDisplay.textContent = `${Math.round(currentZoom * 100)}%`;
-      }
       if (pagesWrapper) {
         pagesWrapper.style.transform = `scale(${currentZoom})`;
       }
     };
 
-    document.getElementById('pdf-zoom-in')?.addEventListener('click', () => {
-      if (currentZoom < 3.0) {
-        currentZoom = Math.min(3.0, currentZoom + 0.25);
-        updateZoomDisplay();
-      }
-    });
-
-    document.getElementById('pdf-zoom-out')?.addEventListener('click', () => {
-      if (currentZoom > 0.5) {
-        currentZoom = Math.max(0.5, currentZoom - 0.25);
-        updateZoomDisplay();
-      }
-    });
-
-    document.getElementById('pdf-zoom-reset')?.addEventListener('click', () => {
-      currentZoom = 1.0;
-      updateZoomDisplay();
-    });
-
     // Touch Pinch-to-Zoom Listener
     let initialPinchDist = 0;
     let initialZoomOnPinch = 1.0;
 
-    const scrollContainer = document.getElementById('pdf-scroll-container');
     if (scrollContainer) {
       scrollContainer.addEventListener('touchstart', (e: TouchEvent) => {
         if (e.touches.length === 2) {
@@ -222,7 +152,7 @@ function renderInAppPdfModal(arrayBuffer: ArrayBuffer, originalUrl: string, docu
           const t2 = e.touches[1];
           const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
           const factor = dist / initialPinchDist;
-          currentZoom = Math.min(3.0, Math.max(0.5, initialZoomOnPinch * factor));
+          currentZoom = Math.min(3.5, Math.max(0.6, initialZoomOnPinch * factor));
           updateZoomDisplay();
         }
       }, { passive: true });
@@ -237,7 +167,6 @@ function renderInAppPdfModal(arrayBuffer: ArrayBuffer, originalUrl: string, docu
     // Asynchronously load & render pages using PDF.js
     (async () => {
       const spinner = document.getElementById('pdf-loading-spinner');
-      const indicator = document.getElementById('pdf-page-indicator');
 
       try {
         const loadingTask = pdfjsLib.getDocument({
@@ -249,15 +178,12 @@ function renderInAppPdfModal(arrayBuffer: ArrayBuffer, originalUrl: string, docu
         pdfDoc = await loadingTask.promise;
         const numPages = pdfDoc.numPages;
 
-        if (indicator) {
-          indicator.textContent = `1 of ${numPages} Page${numPages > 1 ? 's' : ''}`;
-        }
-
         if (spinner) spinner.remove();
         if (!pagesWrapper) return;
 
         const dpr = window.devicePixelRatio || 1;
-        const targetContainerWidth = Math.min((scrollContainer?.clientWidth || window.innerWidth) - 32, 900);
+        const containerWidth = scrollContainer?.clientWidth || window.innerWidth;
+        const targetContainerWidth = Math.min(containerWidth, 900);
 
         for (let pageNum = 1; pageNum <= numPages; pageNum++) {
           if (isCleanedUp) break;
@@ -270,7 +196,7 @@ function renderInAppPdfModal(arrayBuffer: ArrayBuffer, originalUrl: string, docu
           const viewport = page.getViewport({ scale: fitScale });
 
           const pageWrapper = document.createElement('div');
-          pageWrapper.className = 'relative flex flex-col items-center bg-white shadow-xl rounded-lg overflow-hidden transition-shadow hover:shadow-2xl shrink-0';
+          pageWrapper.className = 'relative flex flex-col items-center bg-white shadow-2xl rounded overflow-hidden shrink-0 my-1';
 
           const canvas = document.createElement('canvas');
           canvas.className = 'block max-w-full h-auto bg-white';
@@ -293,23 +219,6 @@ function renderInAppPdfModal(arrayBuffer: ArrayBuffer, originalUrl: string, docu
             viewport,
             transform: transform as any,
           }).promise;
-        }
-
-        // Scroll listener to update page indicator (e.g. Page X of Y)
-        if (scrollContainer && indicator) {
-          scrollContainer.addEventListener('scroll', () => {
-            if (!pagesWrapper || numPages <= 1) return;
-            const pageElements = Array.from(pagesWrapper.children);
-            const containerTop = scrollContainer.getBoundingClientRect().top;
-
-            for (let i = 0; i < pageElements.length; i++) {
-              const rect = pageElements[i].getBoundingClientRect();
-              if (rect.bottom > containerTop + 50) {
-                indicator.textContent = `Page ${i + 1} of ${numPages}`;
-                break;
-              }
-            }
-          }, { passive: true });
         }
       } catch (renderErr: any) {
         console.error('[PDF Render Error]', renderErr);
